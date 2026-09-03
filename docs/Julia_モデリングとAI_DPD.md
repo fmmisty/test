@@ -15,10 +15,23 @@
 
 ### Julia の入れ方（ご自身の環境）
 ```bash
-# 方法A: juliaup（推奨）
+# Mac / Linux（juliaup 推奨）
 curl -fsSL https://install.julialang.org | sh
-# 方法B: 公式バイナリを julialang.org/downloads から取得して展開
 julia --version   # 確認
+```
+
+**Windows の場合**（PowerShell またはコマンドプロンプト）:
+```powershell
+winget install julia -s msstore      # juliaup + 最新安定版
+# winget が無ければ Microsoft Store で「Julia」を検索してインストール
+# GUI 派は julialang.org/downloads の Manual Downloads から .exe
+julia --version                      # 新しいターミナルを開いて確認
+```
+実行（Windows はパス区切りが `\`）:
+```powershell
+julia sim\dpd_model_from_data.jl            # 合成データで自己テスト
+julia sim\dpd_model_from_data.jl meas.csv   # 実測 I/Q(CSV) でモデル同定
+julia -e "using Pkg; Pkg.add(\"Flux\")"     # NN 版を使うときだけ
 ```
 
 ### 実行
