@@ -169,6 +169,8 @@
     <div class="kpi"><div class="k">DPD後 EVM(模擬)</div><div class="v">2.0<small> %</small></div></div>
     <div class="kpi"><div class="k">DPD後 ACLR(模擬)</div><div class="v">40<small> dB</small></div></div>
     <div class="kpi"><div class="k">実機裏付け ACP</div><div class="v">−57.1<small> dB</small></div></div>
+    <div class="kpi"><div class="k">最大出力(技術条件)</div><div class="v">≤ 2<small> W</small></div></div>
+    <div class="kpi"><div class="k">99% 占有帯</div><div class="v">≤ 405<small> kHz</small></div></div>
   </div>
 
   <section>
@@ -191,10 +193,13 @@
       <tbody>
         <tr><td>周波数 / 用途</td><td>M バンド 6.570–6.870 GHz（放送事業用）、<strong>音声</strong>伝送（N バンド＝映像は対象外）</td></tr>
         <tr><td>運用</td><td>単一キャリア・同時運用なし・<strong>周波数アジャイル</strong>（バンド内可変）</td></tr>
-        <tr><td>変調</td><td>64QAM / OFDM（ARIB STD-B33 系）。音声ゆえ占有帯域は狭い（要確認）</td></tr>
+        <tr><td>占有帯域</td><td><strong>99% 占有帯幅 ≤ 405 kHz</strong>（超狭帯域, 性能規定）。<span class="mono">B ≈ R<sub>s</sub>(1+α)</span>。α・R<sub>s</sub>・FEC 等は規制未指定＝<strong>設計値</strong></td></tr>
+        <tr><td>出力電力</td><td><strong>最大 2 W（≒33 dBm）</strong>。標準機 300 mW＋<strong>外付け PA</strong>構成（本件アンプは +8 dB 級の昇圧）</td></tr>
+        <tr><td>変調</td><td>64QAM（ロールオフ α は 405 kHz・隣接妨害・スプリアスを満たす設計値）</td></tr>
         <tr><td>合否目安</td><td class="mono">EVM ≤ 8&thinsp;% ・ ACLR ≥ ~30&thinsp;dBc（PAPR ゆえ 飽和−7〜9&thinsp;dB バックオフ）</td></tr>
       </tbody>
     </table></div>
+    <p style="font-size:.86rem;color:var(--muted);margin-top:8px">出典: 総務省「放送事業用システムの技術的条件」一部答申(2007-10-31)。帯域外スペクトルマスク・周波数偏差・干渉保護比の具体値は概要版に無く、審査基準の別紙＋委員会報告本文で要確認。</p>
   </section>
 
   <section>
@@ -328,12 +333,15 @@
     <p><strong>「石は C 帯 GaN MMIC で楽に、効率は割り切って深バックオフ＋放熱、歪みは DPD（MP→GMP→NN）で。
       狭帯域でも効く熱・トラップのメモリーを、バイアス回路＋熱設計＋DPD で叩く」</strong> ― これが本プロジェクトの現実解。
       方式・メモリー効果・スペクトル整形は調査・原理検証を完了し、メーカー実機データ（ACP −57.1 dB）が方針を裏付けている。</p>
-    <h3>設計確定に必要な残情報</h3>
+    <p style="margin-top:.6em">総務省 技術的条件（2007 答申）で <strong>出力 ≤ 2 W</strong>・<strong>99% 占有帯 ≤ 405 kHz</strong> が判明。
+      本件アンプは<strong>標準機 300 mW を最大 2 W へ昇圧する外付け PA</strong>。2 W は 6.5 GHz の GaN では低〜中出力で、
+      <strong>デバイス選定は容易</strong>（超狭帯域ゆえ DPD の観測系も 1.2〜2 MHz で足りる）。</p>
+    <h3>残る確認事項</h3>
     <ul>
-      <li>音声チャネルの占有帯域幅・シンボルレート・変調 → ビデオ帯域・DPD 要否・マスク余裕が確定</li>
-      <li>目標出力電力 → MMIC 単体か合成か、型番確定</li>
-      <li>運用上端（〜6.87 GHz か 6.75 GHz 以下か）</li>
-      <li>各社データシート（P1dB・パルス I-V・電流コラプス・線形性）</li>
+      <li><strong>帯域外スペクトルマスク・周波数偏差・干渉保護比</strong>の具体値 → 電波法関係審査基準の別紙＋委員会報告本文（概要版には無い）</li>
+      <li>実機の<strong>ロールオフ α・シンボルレート・FEC・音声符号化</strong>（405 kHz を満たす設計値）</li>
+      <li>外付け PA の設計点（300 mW→2 W の<strong>必要利得・線形性配分・バックオフ</strong>）</li>
+      <li>運用上端（〜6.87 GHz か 6.75 GHz 以下か）、デバイスの P1dB・パルス I-V・電流コラプス</li>
       <li>効率要件（ET を入れるか、バックオフ主体でよいか）</li>
     </ul>
   </section>
