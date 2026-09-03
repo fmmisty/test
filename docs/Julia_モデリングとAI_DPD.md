@@ -66,6 +66,22 @@ Julia の利点: `θ = Φ \ y` の一行で最小二乗が書け、数式に近�
 - NN-DPD は**学習データ量・過学習・量子化（FPGA 化）**が課題。まず MP/GMP でベースラインを作り、**足りなければ NN** に進むのが手堅い（MESW 技報も多項式/LUT ベース）。
 - 実機化は **FPGA**（量子化・固定小数点、規則的な行列積）で低遅延実装。
 
+### 実際に動かした結果（NumPy 版、この環境で実行）
+[`sim/nn_dpd_demo.py`](../sim/nn_dpd_demo.py)（自作の小さな MLP、NumPy のみ）を合成 GaN PA で実行:
+
+| 条件 | EVM | ACLR |
+|---|---|---|
+| DPD なし | 9.70% | 33.1 dB |
+| MP DPD 7次/深さ5 | **2.04%** | **40.3 dB** |
+| NN-DPD (MLP) | 7.56% | 30.2 dB |
+
+- **小さな自作 MLP でも 64QAM 合格（EVM<8%）**を確認。ただし本モデル（Wiener 型）では**よく整合した MP が最良**。
+- NN は**深いネット/フレームワーク（Flux/PyTorch）・十分な学習データ・多段 ILA**で、**実 GaN の複雑メモリー**時に有利になり得る。
+- 実行: `PYTHONPATH=. python3 sim/nn_dpd_demo.py`
+
+### Julia(Flux) 版の雛形
+[`sim/nn_dpd_flux.jl`](../sim/nn_dpd_flux.jl) — 同じ手法（MP 基底特徴 → MLP、ILA ポストインバース）を **Flux.jl** で。メモリを明示的に扱うなら先頭を `GRU` に。※Julia 不在の本環境では未実行、ロジックは NumPy 版と同型。
+
 ---
 
 ## 4. 本件での位置づけ
