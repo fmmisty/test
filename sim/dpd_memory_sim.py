@@ -272,14 +272,17 @@ def main():
     y0 = pa(x) / g
     w_ml, _ = identify_dpd(pa, x, order=7, memory=0, tap_spacing=osr)
     y1 = pa(apply_dpd(x, w_ml, 7, 0, osr)) / g
-    w_mp, _ = identify_dpd(pa, x, order=7, memory=3, tap_spacing=osr, model='mp')
-    y2 = pa(apply_dpd(x, w_mp, 7, 3, osr, model='mp')) / g
-    w_gmp, _ = identify_dpd(pa, x, order=7, memory=3, tap_spacing=osr,
+    # 推奨FPGA構成: 7次・メモリー深さ5 の MP をまず作る
+    MEM = 5
+    w_mp, _ = identify_dpd(pa, x, order=7, memory=MEM, tap_spacing=osr, model='mp')
+    y2 = pa(apply_dpd(x, w_mp, 7, MEM, osr, model='mp')) / g
+    # ACLR が不足した場合のみ GMP の交差項を追加
+    w_gmp, _ = identify_dpd(pa, x, order=7, memory=MEM, tap_spacing=osr,
                             model='gmp', lag=1)
-    y3 = pa(apply_dpd(x, w_gmp, 7, 3, osr, model='gmp', lag=1)) / g
+    y3 = pa(apply_dpd(x, w_gmp, 7, MEM, osr, model='gmp', lag=1)) / g
     rows = [("DPD なし", evm_ofdm(y0, x, meta), aclr(y0, osr)),
             ("メモリレス DPD", evm_ofdm(y1, x, meta), aclr(y1, osr)),
-            ("MP DPD (メモリ)", evm_ofdm(y2, x, meta), aclr(y2, osr)),
+            ("MP DPD 7次/深さ5", evm_ofdm(y2, x, meta), aclr(y2, osr)),
             ("GMP DPD (交差項)", evm_ofdm(y3, x, meta), aclr(y3, osr))]
 
     print(f"\n===== パートB: 64QAM/OFDM(≒17.5MHz, PAPR≈{papr:.1f}dB) の DPD 評価 =====")
