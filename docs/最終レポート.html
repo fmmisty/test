@@ -284,6 +284,24 @@
     <h3>スペクトル整形（矩形度 vs PAPR）</h3>
     <p>送信 RRC のロールオフ β を下げるほど矩形に近づくが PAPR が増える（β 0.5→0.1 で PAPR
       <span class="mono">6.0→7.4 dB</span>）。急峻すぎるとサイドローブが増えマスク余裕を食う。<strong>スイートスポットは β ≈ 0.2〜0.35</strong>。</p>
+
+    <h3>Julia による追加検証 ― PA モデル同定（合成データ・別試験）</h3>
+    <p><strong>Windows / Julia 1.12.7</strong> で <span class="mono">dpd_model_from_data.jl</span> を実行し、合成データで PA モデルを同定した
+      （前掲 EVM/ACLR の原理検証とは<strong>別試験</strong>として記載）。</p>
+    <div class="tw"><table>
+      <thead><tr><th>モデル</th><th class="num">係数数</th><th class="num">NMSE</th></tr></thead>
+      <tbody>
+        <tr class="best"><td><strong>MP 7 次/メモリー深さ 5</strong></td><td class="num">24</td><td class="num">−34.71 dB</td></tr>
+        <tr><td>GMP（交差項）</td><td class="num">42</td><td class="num">−34.74 dB</td></tr>
+      </tbody>
+    </table></div>
+    <p>ILA による DPD 係数抽出：MP-DPD <span class="mono">24</span> 係数、推定小信号利得
+      <span class="mono">|G| = 1.849（5.3 dB）</span>。GMP は MP 比 <strong>+18 係数</strong>に対し
+      NMSE 改善は<strong>約 0.03 dB に留まる</strong>ため、現段階の第一候補は <strong>MP 7 次/メモリー深さ 5</strong>。</p>
+    <div class="call">
+      <div class="label">位置づけ</div>
+      <p>本結果は合成データによる追加検証（別試験）。実機 I/Q 取得後に、DPD OFF/ON で NMSE・EVM・ACLR を最終評価する。</p>
+    </div>
   </section>
 
   <section>
