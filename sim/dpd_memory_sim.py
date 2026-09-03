@@ -110,7 +110,8 @@ class GaNPA:
 #    memory=0 → メモリレス DPD, memory>0 → メモリ付き DPD
 # ----------------------------------------------------------------------
 def mp_basis(x, order=7, memory=2, tap_spacing=1):
-    """メモリ多項式基底 (奇数次 1,3,5,.. × メモリ 0..memory)。
+    """メモリ多項式(MP)基底 (奇数次 1,3,5,.. × メモリ 0..memory)。
+        列: x[n-m]·|x[n-m]|^{p-1}
     tap_spacing でメモリタップ間隔を指定(PA のメモリ時定数に整合させる)。"""
     ks = range(1, order + 1, 2)
     cols = []
@@ -124,25 +125,50 @@ def mp_basis(x, order=7, memory=2, tap_spacing=1):
     return np.column_stack(cols)
 
 
-def identify_dpd(pa, x, order=7, memory=2, tap_spacing=1, iters=1, lam=1e-5):
+def gmp_basis(x, order=7, memory=2, lag=1, tap_spacing=1):
+    """一般化メモリ多項式(GMP)基底 = MP + 遅延包絡線との交差項(Morgan 2006)。
+        交差項: x[n-m]·|x[n-m-l]|^{p-1}   (l=1..lag, p=3,5,..)
+    遅延した包絡線 |x[n-m-l]| が現在の信号に与える影響を補正する。"""
+    cols = [mp_basis(x, order, memory, tap_spacing)]      # 基本の MP 項
+    ax = np.abs(x)
+    ks = range(3, order + 1, 2)                            # 交差項は 3 次以上
+    for m in range(memory + 1):
+        d = m * tap_spacing
+        xm = np.roll(x, d); xm[:d] = 0
+        for l in range(1, lag + 1):
+            dl = (m + l) * tap_spacing
+            axl = np.roll(ax, dl); axl[:dl] = 0
+            for k in ks:
+                cols.append(xm * axl ** (k - 1))
+    return np.column_stack(cols)
+
+
+def _basis(x, model, order, memory, lag, tap_spacing):
+    if model == 'gmp':
+        return gmp_basis(x, order, memory, lag, tap_spacing)
+    return mp_basis(x, order, memory, tap_spacing)
+
+
+def identify_dpd(pa, x, order=7, memory=2, tap_spacing=1, model='mp', lag=1,
+                 iters=1, lam=1e-5):
     """間接学習(ILA): ポストインバースをリッジ回帰で同定 → プリディストータに転用。
     正規化領域(PA 出力を小信号利得 G で割る)で「Phi(z)·w ≈ u」を解く。
-    tap_spacing は PA のメモリ時定数に整合させる(不整合だとメモリ補正が効かない)。"""
+    model='mp'|'gmp'。tap_spacing は PA のメモリ時定数に整合させる。"""
     G = _lin_gain(pa)
     u = x.copy()                       # 現在の PA 入力(初期=無補正)
     w = None
     for _ in range(iters):
         z = pa(u) / G                  # 正規化 PA 出力
-        Phi = mp_basis(z, order, memory, tap_spacing)
+        Phi = _basis(z, model, order, memory, lag, tap_spacing)
         A = Phi.conj().T @ Phi
         A += lam * np.trace(A) / A.shape[0] * np.eye(A.shape[0])
         w = np.linalg.solve(A, Phi.conj().T @ u)
-        u = mp_basis(x, order, memory, tap_spacing) @ w
+        u = _basis(x, model, order, memory, lag, tap_spacing) @ w
     return w, G
 
 
-def apply_dpd(x, w, order=7, memory=2, tap_spacing=1):
-    return mp_basis(x, order, memory, tap_spacing) @ w
+def apply_dpd(x, w, order=7, memory=2, tap_spacing=1, model='mp', lag=1):
+    return _basis(x, model, order, memory, lag, tap_spacing) @ w
 
 
 def _lin_gain(pa):
@@ -246,11 +272,15 @@ def main():
     y0 = pa(x) / g
     w_ml, _ = identify_dpd(pa, x, order=7, memory=0, tap_spacing=osr)
     y1 = pa(apply_dpd(x, w_ml, 7, 0, osr)) / g
-    w_mem, _ = identify_dpd(pa, x, order=7, memory=3, tap_spacing=osr)
-    y2 = pa(apply_dpd(x, w_mem, 7, 3, osr)) / g
+    w_mp, _ = identify_dpd(pa, x, order=7, memory=3, tap_spacing=osr, model='mp')
+    y2 = pa(apply_dpd(x, w_mp, 7, 3, osr, model='mp')) / g
+    w_gmp, _ = identify_dpd(pa, x, order=7, memory=3, tap_spacing=osr,
+                            model='gmp', lag=1)
+    y3 = pa(apply_dpd(x, w_gmp, 7, 3, osr, model='gmp', lag=1)) / g
     rows = [("DPD なし", evm_ofdm(y0, x, meta), aclr(y0, osr)),
             ("メモリレス DPD", evm_ofdm(y1, x, meta), aclr(y1, osr)),
-            ("メモリ付き DPD", evm_ofdm(y2, x, meta), aclr(y2, osr))]
+            ("MP DPD (メモリ)", evm_ofdm(y2, x, meta), aclr(y2, osr)),
+            ("GMP DPD (交差項)", evm_ofdm(y3, x, meta), aclr(y3, osr))]
 
     print(f"\n===== パートB: 64QAM/OFDM(≒17.5MHz, PAPR≈{papr:.1f}dB) の DPD 評価 =====")
     print("-" * 50)
@@ -262,15 +292,16 @@ def main():
     print("64QAM 目標: EVM ≦ 8%,  ACLR ≧ ~30 dB")
 
     print("\n>>> メモリー効果の検証(結論):")
-    print(f"    メモリレス DPD: EVM {rows[1][1]:.2f}%  (静的補正のみ → 残留)")
-    print(f"    メモリ付き DPD: EVM {rows[2][1]:.2f}%  (メモリ補正で解消)")
+    print(f"    メモリレス DPD : EVM {rows[1][1]:.2f}%  (静的補正のみ → 残留)")
+    print(f"    MP DPD        : EVM {rows[2][1]:.2f}%  (メモリ補正で解消)")
+    print(f"    GMP DPD       : EVM {rows[3][1]:.2f}%  (交差項でさらに/同等)")
     if rows[1][1] - rows[2][1] > 1.0:
-        print("    ⇒ メモリレス DPD では取り切れない残留を、メモリ付き DPD が解消。")
+        print("    ⇒ メモリレス DPD では取り切れない残留を、MP/GMP が解消。")
         print("       メモリー効果は明確に『出て』おり、DPD にメモリ項が必須と確認。")
     else:
         print("    ⇒ 差は小さい(モデル設定ではメモリ寄与が軽微)。")
 
-    _make_figures(x, pa, pa_nomem, y0, y1, y2, g, osr)
+    _make_figures(x, pa, pa_nomem, y0, y1, y3, g, osr)  # 図は memoryless vs GMP
     return rows
 
 
@@ -315,7 +346,7 @@ def _make_figures(x, pa, pa_nomem, y0, y1, y2, g, osr):
         return f, p - p.max()
     for s, lb, c in [(y0, "no DPD", "#888888"),
                      (y1, "memoryless DPD", "#e8710a"),
-                     (y2, "memory DPD", "#1a7f37")]:
+                     (y2, "GMP DPD (memory)", "#1a7f37")]:
         f, p = psd_db(s)
         ax[2].plot(f, p, label=lb, lw=1.1, color=c)
     ax[2].set_xlim(-3, 3); ax[2].set_ylim(-70, 3)

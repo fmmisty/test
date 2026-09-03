@@ -27,9 +27,14 @@ DPD の挙動モデルと適応アルゴリズムを自前で回して EVM/ACLR 
 
 ## 2. 海外論文（英語・基礎〜応用）
 
-### 2.1 DPD のモデル（基礎・必読）
-- **A Generalized Memory Polynomial Model for Digital Predistortion of RF Power Amplifiers**（Morgan ほか, IEEE TSP 2006）— GMP の原典。
+### 2.1 DPD のモデル（基礎・必読3本）
+> DPD でメモリー効果を補正するなら、まずこの 3 本。特に ①GMP が実装の基準。
+
+- **① D. R. Morgan ほか, "A Generalized Memory Polynomial Model for Digital Predistortion of RF Power Amplifiers," IEEE TSP, 2006** — GMP の原典。MP に過去・未来の包絡線との交差項を追加。広帯域 DPD で最も参照される。
   https://www.researchgate.net/publication/3319867
+- **② S. Boumaiza and F. M. Ghannouchi, "Thermal Memory Effects Modeling and Compensation in RF Power Amplifiers and Predistortion Linearizers," IEEE TMTT, 2003** — 素子温度変化による遅いメモリー効果のモデル化と補償。GaN 自己発熱に直結。
+  DOI: 10.1109/TMTT.2003.820157
+- **③ H. Ku and J. S. Kenney, "Behavioral Modeling of Nonlinear RF Power Amplifiers Considering Memory Effects," IEEE TMTT, Vol.51, No.12, pp.2495–2504, 2003** — 入力履歴を含む PA モデルを実測から作る考え方。実機較正の基礎。
 - **A digital predistorter for power amplifier with memory effect** — メモリー効果を扱う DPD（＝「デジタルにもメモリー効果」の論点）。
   https://www.researchgate.net/publication/229926972
 - **An Open-Loop Digital Predistorter Based on Memory Polynomial Inverses** — 開ループ MP 逆特性。

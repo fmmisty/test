@@ -163,6 +163,39 @@
 > - したがって DPD 側は**メモリ構造を持つモデル（メモリ多項式 MP／一般化メモリ多項式 GMP／Volterra 級数）**で「過去の入力にも依存する」非線形を表現する必要があります。
 > - 参考: *"A digital predistorter for power amplifier with memory effect"*、および MP/Volterra 系の各論文（第 参考データ 章）。
 
+### 6.0 基礎数式と必読論文（実装の基準）
+
+**メモリー効果の物理要因**（過去入力 x[n−m] が現在の利得・位相に影響する原因）:
+バイアス・整合回路の低周波インピーダンス／デバイスの自己発熱／GaN HEMT のトラップ現象／電源電圧の変動／周波数依存の入出力整合回路。
+
+**(a) メモリレス DPD**（現在サンプルのみ、奇数次）:
+
+```
+y[n] = Σ_{p=1,3,5,…}^{P}  a_p · x[n] · |x[n]|^{p-1}
+```
+
+**(b) メモリ多項式 DPD（MP）**（過去 M サンプルまで補正）:
+
+```
+y[n] = Σ_{m=0}^{M} Σ_{p=1,3,5,…}^{P}  a_{p,m} · x[n-m] · |x[n-m]|^{p-1}
+```
+
+**(c) 一般化メモリ多項式 DPD（GMP）**（遅延した包絡線との交差項を追加）:
+
+```
+… + Σ_m Σ_l Σ_p  b_{p,m,l} · x[n-m] · |x[n-m-l]|^{p-1}
+```
+
+遅延包絡線 |x[n−m−l]| が現在の信号に与える影響まで補正 → 広帯域で最も高精度。**本件の実装基準は GMP**（狭帯域なら MP でも可。まず MP、不足なら GMP）。
+
+**最初に読むべき論文 3 本**（DPD でメモリー効果を補正する場合）:
+
+1. **D. R. Morgan ほか, "A Generalized Memory Polynomial Model for Digital Predistortion of RF Power Amplifiers," IEEE TSP, 2006** — GMP の原典。MP に過去・未来の包絡線との交差項を追加。**広帯域 DPD で最も参照される実装基準。**
+2. **S. Boumaiza and F. M. Ghannouchi, "Thermal Memory Effects Modeling and Compensation in RF Power Amplifiers and Predistortion Linearizers," IEEE TMTT, 2003（DOI: 10.1109/TMTT.2003.820157）** — 素子温度変化による**遅いメモリー効果**をモデル化し、プリディストータ側で補償。GaN の自己発熱に直結。
+3. **H. Ku and J. S. Kenney, "Behavioral Modeling of Nonlinear RF Power Amplifiers Considering Memory Effects," IEEE TMTT, Vol.51, No.12, pp.2495–2504, 2003** — **入力履歴を含む PA モデルを実測データから作る**考え方。実機較正の基礎。
+
+> 本レポートの付属シミュレーション（`sim/dpd_memory_sim.py`）は上記 (b) MP を実装し、(c) GMP（交差項）も比較できる。実装基準の GMP は Morgan(2006) の定式化に従う。
+
 ### 6.1 挙動モデル
 - **メモリ多項式（MP, Memory Polynomial）**: 静的非線形＋メモリを有限係数で表現。実時間実装が容易で GaN の第一候補。
 - **一般化メモリ多項式（GMP, Generalized Memory Polynomial）**: 交差項を追加し、GaN の長期メモリ（トラップ自己バイアス）により強い。**64QAM/OFDM の実測で有効（LTE 64QAM で検証例あり）**。
