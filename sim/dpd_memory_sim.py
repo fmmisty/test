@@ -352,11 +352,17 @@ def _make_figures(x, pa, pa_nomem, y0, y1, y2, g, osr):
                      (y2, "GMP DPD (memory)", "#1a7f37")]:
         f, p = psd_db(s)
         ax[2].plot(f, p, label=lb, lw=1.1, color=c)
-    ax[2].set_xlim(-3, 3); ax[2].set_ylim(-70, 3)
+    # 規格スペクトルマスク(例)を重ねる: 目標は「マスクより下=綺麗な長方形」
+    edge = 0.5                                   # チャネル端(±0.5 x BW)
+    mf = [-3, -1.2, -1.2, -edge, -edge, edge, edge, 1.2, 1.2, 3]
+    mm = [-55, -55, -33, -33, 2, 2, -33, -33, -55, -55]
+    ax[2].plot(mf, mm, color="#8250df", lw=1.6, ls="--", label="spec mask (example)")
+    ax[2].axvspan(-edge, edge, color="#1a7f37", alpha=0.05)
+    ax[2].set_xlim(-3, 3); ax[2].set_ylim(-70, 5)
     ax[2].set_xlabel("relative freq (x channel BW)")
     ax[2].set_ylabel("normalized PSD [dB]")
-    ax[2].set_title("Output spectrum (memory PA)\n+ DPD linearization")
-    ax[2].legend(fontsize=8); ax[2].grid(alpha=0.3)
+    ax[2].set_title("Output spectrum vs mask\n(goal: cleaner rectangle, below mask)")
+    ax[2].legend(fontsize=7); ax[2].grid(alpha=0.3)
     fig.tight_layout()
     fig.savefig("docs/figures/dpd_memory_result.png", dpi=130)
     print("figure saved: docs/figures/dpd_memory_result.png")
