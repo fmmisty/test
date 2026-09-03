@@ -394,6 +394,10 @@ GaN PA＋予歪(DPD)で 64QAM 級を通すのは**確立された技術**で、�
   - "Trapping Effects in AlGaN/GaN HEMTs for High Frequency Applications"
   - "Surface-related drain current dispersion effects in AlGaN-GaN HEMTs"
   - "Temperature-Independent Current Dispersion in 0.15μm AlGaN/GaN HEMTs for 5G"
+- 実機 DPD 開発の一次資料（裏取り）:
+  - **三菱電機特機システム MMS技報 Vol.29「DPD を用いた広帯域低歪増幅器」土谷和之** — 400MHz/256QAM/α0.1、ACP −57.1dB・歪補償量17.3dB 達成。**§4.6.2 で同一 AM/AM・AM/PM でもバイアス回路違いで DPD 効果が10dB差＝メモリー効果の実測証拠**。→ 解析: [`MESW技報_解析と裏取り.md`](MESW技報_解析と裏取り.md)
+  - 前報: 同 Vol.27 pp.9–14 (2020)「フィードフォワード歪補償を用いた高効率広帯域増幅器」
+- 住友以外の GaN HEMT デバイス: [`非住友_GaN_HEMTデバイス調査.md`](非住友_GaN_HEMTデバイス調査.md)（Wolfspeed/MACOM CGHV1F006S, Qorvo, 三菱, Ampleon, RFHIC, ADI MMIC ほか）
 - GaAs→GaN 動向・国際的前例:
   - Analog Devices「Gauging the State of GaN Power Amplification」
   - Microwave Journal「A Comparison of GaN vs. GaAs System Performance」/「From GaAs to GaN Devices」
