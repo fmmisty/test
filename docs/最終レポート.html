@@ -1,0 +1,341 @@
+<title>Mバンド GaN 低歪増幅 設計報告</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#f5f7f7; --surface:#ffffff; --panel:#eef2f2;
+    --ink:#15201f; --muted:#586867; --faint:#8a9998;
+    --line:#d7dedd; --line-strong:#c2cbca;
+    --accent:#0e7c86; --accent-soft:#0e7c8618; --accent-ink:#0b5b63;
+    --good:#2e7d5b; --warn:#a5701f; --crit:#b03a3a;
+    --shadow:0 1px 2px rgba(20,40,40,.05),0 6px 20px rgba(20,40,40,.05);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#0c1112; --surface:#121a1b; --panel:#161f20;
+      --ink:#e7eeed; --muted:#9fb0ae; --faint:#6d7d7c;
+      --line:#243130; --line-strong:#31413f;
+      --accent:#3fb6c0; --accent-soft:#3fb6c022; --accent-ink:#7fd6dd;
+      --good:#4bbd87; --warn:#d29a4a; --crit:#e0716b;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 26px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0c1112; --surface:#121a1b; --panel:#161f20;
+    --ink:#e7eeed; --muted:#9fb0ae; --faint:#6d7d7c;
+    --line:#243130; --line-strong:#31413f;
+    --accent:#3fb6c0; --accent-soft:#3fb6c022; --accent-ink:#7fd6dd;
+    --good:#4bbd87; --warn:#d29a4a; --crit:#e0716b;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Serif",Georgia,serif;line-height:1.65;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:820px;margin:0 auto;padding:clamp(20px,5vw,64px) clamp(18px,5vw,40px)}
+  h1,h2,h3,.label,.eyebrow,th,.mono,.fig,nav{font-family:"IBM Plex Sans",system-ui,sans-serif}
+  .mono,.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+  /* Masthead */
+  .mast{border-top:3px solid var(--accent);padding-top:18px;
+    display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;
+    justify-content:space-between;color:var(--muted)}
+  .mast .eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent-ink);font-weight:600}
+  .mast .doc{font-size:.72rem;letter-spacing:.05em}
+  h1{font-size:clamp(1.7rem,4.6vw,2.5rem);line-height:1.12;margin:.5em 0 .1em;
+    font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+  .sub{color:var(--muted);font-size:1.02rem;margin:0 0 4px;max-width:60ch}
+  .meta{color:var(--faint);font-size:.8rem;font-family:"IBM Plex Sans",sans-serif;
+    display:flex;gap:16px;flex-wrap:wrap;margin-top:10px}
+
+  /* Spectrum motif */
+  figure{margin:26px 0 8px}
+  .spectrum{width:100%;height:auto;display:block;background:var(--surface);
+    border:1px solid var(--line);border-radius:10px}
+  .fig{font-size:.76rem;color:var(--faint);margin-top:8px;letter-spacing:.02em}
+
+  /* Key figures strip */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:1px;background:var(--line);border:1px solid var(--line);
+    border-radius:12px;overflow:hidden;margin:26px 0}
+  .kpi{background:var(--surface);padding:16px 18px}
+  .kpi .k{font-family:"IBM Plex Sans",sans-serif;font-size:.68rem;
+    text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .kpi .v{font-family:"IBM Plex Mono",monospace;font-size:1.5rem;font-weight:500;
+    margin-top:4px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .kpi .v small{font-size:.8rem;color:var(--muted);font-weight:400}
+
+  section{margin:38px 0}
+  h2{font-size:1.22rem;font-weight:600;letter-spacing:-.01em;margin:0 0 4px;
+    display:flex;align-items:baseline;gap:12px}
+  h2 .n{font-family:"IBM Plex Mono",monospace;font-size:.85rem;color:var(--accent);
+    font-weight:600}
+  h2 + .lead{color:var(--muted);margin:.2em 0 1em;font-size:.98rem}
+  h3{font-size:.95rem;font-weight:600;margin:1.5em 0 .3em;font-family:"IBM Plex Sans",sans-serif}
+  p{margin:.7em 0}
+  section p, section li{max-width:66ch}
+  ul{padding-left:1.1em;margin:.6em 0}
+  li{margin:.35em 0}
+  a{color:var(--accent-ink);text-underline-offset:2px}
+  strong{font-weight:600}
+  em.term{font-style:normal;background:var(--accent-soft);padding:.05em .35em;
+    border-radius:4px;font-family:"IBM Plex Mono",monospace;font-size:.9em}
+
+  /* Tables */
+  .tw{overflow-x:auto;margin:1em 0;border:1px solid var(--line);border-radius:10px}
+  table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:460px}
+  th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line)}
+  thead th{background:var(--panel);font-size:.72rem;text-transform:uppercase;
+    letter-spacing:.06em;color:var(--muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+  td.num,th.num{text-align:right;font-family:"IBM Plex Mono",monospace;
+    font-variant-numeric:tabular-nums}
+  .best td{background:var(--accent-soft)}
+  .pass{color:var(--good);font-weight:600}
+  .tag{font-family:"IBM Plex Sans",sans-serif;font-size:.72rem;font-weight:600;
+    padding:.12em .5em;border-radius:20px;white-space:nowrap}
+  .tag.g{color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent)}
+  .tag.w{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+  .tag.c{color:var(--crit);background:color-mix(in srgb,var(--crit) 16%,transparent)}
+
+  /* Callout */
+  .call{border:1px solid var(--line-strong);border-left:3px solid var(--accent);
+    background:var(--surface);border-radius:0 10px 10px 0;padding:16px 20px;
+    margin:22px 0;box-shadow:var(--shadow)}
+  .call.crit{border-left-color:var(--crit)}
+  .call .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;
+    color:var(--accent-ink);font-weight:600;margin-bottom:4px}
+  .call.crit .label{color:var(--crit)}
+  .call p{margin:.3em 0}
+
+  /* Architecture flow */
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:14px 0;
+    font-family:"IBM Plex Sans",sans-serif;font-size:.82rem}
+  .node{background:var(--panel);border:1px solid var(--line-strong);
+    border-radius:8px;padding:8px 12px;white-space:nowrap}
+  .node.acc{border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+  .arrow{color:var(--faint)}
+
+  hr{border:none;border-top:1px solid var(--line);margin:36px 0}
+  .foot{color:var(--faint);font-size:.8rem;font-family:"IBM Plex Sans",sans-serif;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
+    border-top:1px solid var(--line);padding-top:16px;margin-top:40px}
+  .refs{font-size:.82rem;color:var(--muted)}
+  .refs li{margin:.3em 0}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="mast">
+      <span class="eyebrow">RF Power Amplifier · Design Report</span>
+      <span class="doc mono">Rev. 2026-09-03 · fmmisty/test #1</span>
+    </div>
+    <h1>Mバンド GaN 低歪増幅器 設計報告</h1>
+    <p class="sub">放送 M バンド(6.5 GHz 帯)の音声伝送を、64QAM で歪みなく増幅する
+      GaN HEMT パワーアンプ ― 方式選定・メモリー効果対策・DPD・デバイス方針の調査と検証。</p>
+    <div class="meta">
+      <span>対象: 6.570–6.870 GHz / 64QAM</span>
+      <span>線形化: デジタルプリディストーション(DPD)</span>
+      <span>状態: 調査・原理検証 完了</span>
+    </div>
+  </header>
+
+  <figure>
+    <svg class="spectrum" viewBox="0 0 640 210" role="img"
+         aria-label="出力スペクトルと規格マスクの模式図。DPD後の信号がマスクの内側に深く収まり、帯域内は平坦な長方形になる。">
+      <!-- baseline -->
+      <line x1="40" y1="180" x2="620" y2="180" stroke="var(--line-strong)" stroke-width="1"/>
+      <!-- spec mask (dashed) -->
+      <path d="M40,150 L235,150 L235,80 L270,30 L370,30 L405,80 L405,150 L600,150"
+            fill="none" stroke="var(--crit)" stroke-width="1.6" stroke-dasharray="5 4"/>
+      <!-- DPD spectrum (filled, inside mask) -->
+      <path d="M40,176 L250,172 L285,45 L355,45 L390,172 L600,176 L600,180 L40,180 Z"
+            fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.8"/>
+      <!-- channel band -->
+      <rect x="285" y="30" width="70" height="150" fill="var(--accent)" opacity="0.05"/>
+      <text x="320" y="22" text-anchor="middle" fill="var(--muted)"
+            font-family="IBM Plex Sans" font-size="11">占有チャネル</text>
+      <text x="150" y="140" fill="var(--crit)" font-family="IBM Plex Sans" font-size="11">規格マスク</text>
+      <text x="470" y="168" fill="var(--accent-ink)" font-family="IBM Plex Sans" font-size="11">DPD 後 = 綺麗な長方形</text>
+    </svg>
+    <figcaption class="fig">図: 目標は「マスクにギリギリ合格」ではなく、帯域内フラット・端が急峻・帯域外は規格より深い矩形にマージンをもって収めること。</figcaption>
+  </figure>
+
+  <div class="kpis">
+    <div class="kpi"><div class="k">対象帯域</div><div class="v">6.57–6.87<small> GHz</small></div></div>
+    <div class="kpi"><div class="k">DPD後 EVM(模擬)</div><div class="v">2.0<small> %</small></div></div>
+    <div class="kpi"><div class="k">DPD後 ACLR(模擬)</div><div class="v">40<small> dB</small></div></div>
+    <div class="kpi"><div class="k">実機裏付け ACP</div><div class="v">−57.1<small> dB</small></div></div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>概要</h2>
+    <p class="lead">実装の現実（高い周波数・箱＋SMA モジュール・レーダー志向の GaN）を踏まえた現実解。</p>
+    <p>放送事業用 <em class="term">M バンド 6.570–6.870 GHz</em> の音声伝送を 64QAM で低歪増幅する。
+      本報告の結論は次のとおり ―</p>
+    <div class="call">
+      <div class="label">設計方針（結論）</div>
+      <p><strong>C 帯 GaN MMIC PA</strong>（整合・多段を IC 内で解決）を<strong>シングルエンド級 AB で深くバックオフ</strong>し、
+        <strong>強力な放熱</strong>と <strong>DPD（メモリ多項式 7 次・メモリー深さ 5 → 不足時 GMP）</strong>で仕上げる。
+        効率が要件なら <strong>ET</strong>（狭帯域で有利）。<strong>Doherty は 6.5 GHz の 1/4 波長問題で不利。</strong></p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>要件</h2>
+    <div class="tw"><table>
+      <thead><tr><th>項目</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td>周波数 / 用途</td><td>M バンド 6.570–6.870 GHz（放送事業用）、<strong>音声</strong>伝送（N バンド＝映像は対象外）</td></tr>
+        <tr><td>運用</td><td>単一キャリア・同時運用なし・<strong>周波数アジャイル</strong>（バンド内可変）</td></tr>
+        <tr><td>変調</td><td>64QAM / OFDM（ARIB STD-B33 系）。音声ゆえ占有帯域は狭い（要確認）</td></tr>
+        <tr><td>合否目安</td><td class="mono">EVM ≤ 8&thinsp;% ・ ACLR ≥ ~30&thinsp;dBc（PAPR ゆえ 飽和−7〜9&thinsp;dB バックオフ）</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>メモリー効果 ― 本設計の核心</h2>
+    <p class="lead">「狭帯域だから DPD 不要」は誤り。効くメモリーの種類が変わる。</p>
+    <p>PA の出力は現在の入力 x[n] だけでは決まらず、過去の入力にも依存する。原因は
+      バイアス回路の低周波インピーダンス、自己発熱、GaN のトラップなど。これが
+      <em class="term">メモリー効果</em>で、DPD 設計を左右する。</p>
+    <div class="tw"><table>
+      <thead><tr><th>種類</th><th class="num">時定数</th><th>帯域を狭くすると</th></tr></thead>
+      <tbody>
+        <tr><td>電気的（バイアスのビデオ帯域インピーダンス）</td><td class="num">変調帯域〜MHz</td><td><span class="tag g">減る</span> デカップリングで容易</td></tr>
+        <tr><td>熱（自己発熱）</td><td class="num">ms 〜</td><td><span class="tag w">残る/むしろ効く</span></td></tr>
+        <tr><td>トラップ（電流コラプス等）</td><td class="num">µs 〜 ms</td><td><span class="tag w">残る/むしろ効く</span></td></tr>
+      </tbody>
+    </table></div>
+    <p>音声のゆっくりした包絡線は、熱・トラップの遅い時定数に追従してしまう（広帯域だと速すぎて平均化される）。
+      よって<strong>本件で真に効くのは熱・トラップのメモリー</strong>。対策は
+      バイアスのビデオ帯域インピーダンス低減・強力放熱・<strong>電流コラプスの小さいデバイス選定</strong>、
+      そして DPD の長時定数補償。</p>
+    <div class="call crit">
+      <div class="label">実機による裏付け（決定的）</div>
+      <p>三菱電機特機システムの DPD 増幅器開発（400 MHz / 256QAM）では、<strong>振幅・位相特性（AM/AM・AM/PM）がほぼ同じ 2 台</strong>でも、
+        <strong>バイアス回路を変えただけで DPD 後の ACP が約 10 dB 変化</strong>した。静的特性が同じでもメモリー効果で DPD の効きが変わる
+        ― 「バイアス回路（＝ビデオ帯域インピーダンス）が鍵」という本設計指針の実測証拠。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>歪み補償方式の選定</h2>
+    <p class="lead">DPD を主軸に、効率手段は 6.5 GHz の実装制約で絞り込む。</p>
+    <p><strong>DPD（デジタルプリディストーション）</strong>が本命 ― 補正力が高く、メモリー効果に対応でき、
+      係数を温度・電源変動に適応できる。フィードフォワード（効率低下）、直交/極 帰還（帯域・安定性の制約）は補助的。</p>
+    <div class="call">
+      <div class="label">なぜ Doherty を採らないか（1/4 波長問題）</div>
+      <p>Doherty は 90°(1/4 波長)反転器が必須。6.5 GHz の 1/4 波長は基板上で
+        <span class="mono">3.6–5.3 mm</span>。物理的には作れるが、公差・寄生・線路損失とモジュール(箱＋SMA)形態で不利。
+        実務では<strong>集中定数 LC(π 型)か MMIC 集積</strong>に限られる。効率が要件なら
+        <strong>ET</strong>（供給変調器の帯域は信号帯域の 1.5〜3 倍で足り、<strong>狭帯域ほど容易</strong>）を選ぶ。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>推奨アーキテクチャ</h2>
+    <div class="flow">
+      <span class="node">BB 64QAM</span><span class="arrow">→</span>
+      <span class="node acc">DPD (MP 7次/深さ5→GMP)</span><span class="arrow">→</span>
+      <span class="node">DAC</span><span class="arrow">→</span>
+      <span class="node">アップコン</span><span class="arrow">→</span>
+      <span class="node acc">C帯 GaN MMIC PA</span><span class="arrow">→</span>
+      <span class="node">6.5 GHz 出力</span>
+    </div>
+    <div class="flow">
+      <span class="arrow">係数適応(ILA) ↑</span>
+      <span class="node">ADC</span><span class="arrow">←</span>
+      <span class="node">ダウンコン(観測)</span><span class="arrow">←</span>
+      <span class="node">カプラ</span>
+    </div>
+    <ul>
+      <li><strong>段1 素の線形性</strong>：級 AB＋ロードプル/高調波終端、バイアスのビデオ帯域インピーダンス低減。</li>
+      <li><strong>段2 効率</strong>：まずバックオフ主体（レーダー志向 GaN＋大発熱の宿命）。要件次第で ET。</li>
+      <li><strong>段3 線形化</strong>：DPD（MP→GMP→必要なら NN）。周波数アジャイルは周波数別係数 or 都度再適応。</li>
+      <li><strong>6.5 GHz ゆえアップコン必須</strong>（400 MHz のダイレクト RF は使えない）。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>DPD の実装と検証</h2>
+    <p class="lead">まず MP、足りなければ GMP、さらに攻めるなら NN。</p>
+    <p>モデルは <em class="term">y[n]=Σ a<sub>p,m</sub> x[n−m]|x[n−m]|<sup>p−1</sup></em>（メモリ多項式）。
+      GMP は遅延包絡線との交差項を追加。係数同定は間接学習(ILA)＋最小二乗。
+      モデルベース設計（MATLAB/Simulink または <strong>Julia</strong> の <span class="mono">θ = Φ \ y</span>）→ FPGA(JESD204B)。</p>
+    <h3>原理検証シミュレーション（64QAM/OFDM, メモリあり GaN PA モデル）</h3>
+    <div class="tw"><table>
+      <thead><tr><th>条件</th><th class="num">EVM</th><th class="num">ACLR</th><th>判定</th></tr></thead>
+      <tbody>
+        <tr><td>DPD なし</td><td class="num">9.70 %</td><td class="num">33.1 dB</td><td><span class="tag c">不可</span></td></tr>
+        <tr><td>メモリレス DPD</td><td class="num">7.49 %</td><td class="num">36.3 dB</td><td><span class="tag w">残留</span></td></tr>
+        <tr class="best"><td><strong>MP DPD 7 次/深さ 5</strong></td><td class="num">2.04 %</td><td class="num">40.3 dB</td><td><span class="tag g">合格</span></td></tr>
+        <tr><td>GMP DPD（交差項）</td><td class="num">2.01 %</td><td class="num">40.6 dB</td><td><span class="tag g">合格</span></td></tr>
+        <tr><td>NN-DPD（AI, 試作 MLP）</td><td class="num">7.56 %</td><td class="num">30.2 dB</td><td><span class="tag g">合格</span></td></tr>
+      </tbody>
+    </table></div>
+    <p>メモリレス DPD では EVM 7.5 % 止まり（メモリー効果の残留）→ <strong>MP で 2.0 %</strong> まで改善。
+      メモリー効果と DPD にメモリ項が必須であることを数値で確認した。NN-DPD も 64QAM を満たすが、
+      よく整合した MP が本モデルでは最良。</p>
+    <h3>スペクトル整形（矩形度 vs PAPR）</h3>
+    <p>送信 RRC のロールオフ β を下げるほど矩形に近づくが PAPR が増える（β 0.5→0.1 で PAPR
+      <span class="mono">6.0→7.4 dB</span>）。急峻すぎるとサイドローブが増えマスク余裕を食う。<strong>スイートスポットは β ≈ 0.2〜0.35</strong>。</p>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>デバイス（石）の方針</h2>
+    <p class="lead">6.5 GHz では MMIC が実装を最も楽にする。</p>
+    <div class="tw"><table>
+      <thead><tr><th>ベンダー / 型番</th><th>周波数</th><th>形態・備考</th></tr></thead>
+      <tbody>
+        <tr><td>住友 SGK5867-30A</td><td class="mono">5.85–6.75 GHz</td><td>内部整合, P5dB≈45dBm/G13.5dB/PAE45%。上端 6.87 は範囲外</td></tr>
+        <tr><td>Wolfspeed/MACOM CGHV1F006S</td><td class="mono">5.5–6.5 GHz</td><td>~8W, 40V, 無整合。ドライバ/中電力</td></tr>
+        <tr><td>Qorvo / ADI / MACOM MMIC</td><td class="mono">6–8 GHz</td><td class="mono">—</td></tr>
+      </tbody>
+    </table></div>
+    <div class="call">
+      <div class="label">MMIC が楽な理由と、残る作り込み</div>
+      <p>整合・多段・（必要なら）ドハティの 1/4 波長まで IC 内で解決、50Ω 入出力で基板に載る、6–8 GHz 内部整合で
+        M 帯上端 6.87 GHz も入れやすい。<strong>ただしバイアス給電（電気的メモリー対策）と放熱（熱メモリー対策）は自前</strong>。
+        石は楽でも DPD＋バイアス/放熱の作り込みは残る。<strong>電流コラプス小/線形グレード</strong>品を優先。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>結論と残課題</h2>
+    <p><strong>「石は C 帯 GaN MMIC で楽に、効率は割り切って深バックオフ＋放熱、歪みは DPD（MP→GMP→NN）で。
+      狭帯域でも効く熱・トラップのメモリーを、バイアス回路＋熱設計＋DPD で叩く」</strong> ― これが本プロジェクトの現実解。
+      方式・メモリー効果・スペクトル整形は調査・原理検証を完了し、メーカー実機データ（ACP −57.1 dB）が方針を裏付けている。</p>
+    <h3>設計確定に必要な残情報</h3>
+    <ul>
+      <li>音声チャネルの占有帯域幅・シンボルレート・変調 → ビデオ帯域・DPD 要否・マスク余裕が確定</li>
+      <li>目標出力電力 → MMIC 単体か合成か、型番確定</li>
+      <li>運用上端（〜6.87 GHz か 6.75 GHz 以下か）</li>
+      <li>各社データシート（P1dB・パルス I-V・電流コラプス・線形性）</li>
+      <li>効率要件（ET を入れるか、バックオフ主体でよいか）</li>
+    </ul>
+  </section>
+
+  <hr>
+  <div class="refs">
+    <strong style="font-family:'IBM Plex Sans',sans-serif;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">主な出典</strong>
+    <ul>
+      <li>D. R. Morgan ほか, "A Generalized Memory Polynomial Model for DPD of RF PAs," IEEE TSP, 2006</li>
+      <li>S. Boumaiza &amp; F. M. Ghannouchi, "Thermal Memory Effects…," IEEE TMTT, 2003 (DOI:10.1109/TMTT.2003.820157)</li>
+      <li>H. Ku &amp; J. S. Kenney, "Behavioral Modeling of Nonlinear RF PAs Considering Memory Effects," IEEE TMTT, 2003</li>
+      <li>A. Katz, "Minimizing Power Amplifier Memory Effects," IEEE MTT</li>
+      <li>三菱電機特機システム MMS技報 Vol.29「DPD を用いた広帯域低歪増幅器」土谷和之</li>
+      <li>総務省 放送事業用マイクロ波帯 周波数区分 / ARIB STD-B33・B11・B43</li>
+      <li>Wolfspeed/MACOM CGHV1F006S データシート ほか（デバイス）</li>
+    </ul>
+  </div>
+  <div class="foot">
+    <span>Mバンド GaN 低歪増幅器 設計報告 · 調査・原理検証まとめ</span>
+    <span class="mono">fmmisty/test · docs/00_総まとめ.md 参照</span>
+  </div>
+
+</div>
