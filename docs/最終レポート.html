@@ -125,10 +125,29 @@
   .refs{font-size:.82rem;color:var(--muted)}
   .refs li{margin:.3em 0}
 
+  /* Formal cover page (PDF only) */
+  .coverpage{display:none}
+  .coverpage .cov-top{display:flex;justify-content:space-between;align-items:baseline}
+  .coverpage .cov-brand{font-family:"IBM Plex Sans",sans-serif;font-weight:700;
+    font-size:1.05rem;letter-spacing:.02em;color:var(--ink)}
+  .coverpage .cov-kind{font-family:"IBM Plex Sans",sans-serif;font-size:.72rem;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:600}
+  .coverpage .cov-mid{margin-top:34vh}
+  .coverpage .cov-rule{height:4px;width:64px;background:var(--accent);margin-bottom:22px}
+  .coverpage .cov-title{font-family:"IBM Plex Sans",sans-serif;font-size:2.5rem;
+    line-height:1.12;font-weight:700;letter-spacing:-.01em;margin:0}
+  .coverpage .cov-sub{color:var(--muted);font-size:1.05rem;margin:.7em 0 0;max-width:52ch;line-height:1.6}
+  .coverpage .cov-meta{margin-top:auto;border-top:1px solid var(--line);padding-top:16px}
+  .coverpage .cov-meta table{width:auto;border:none;font-size:.86rem;min-width:0}
+  .coverpage .cov-meta th{background:none;border:none;text-transform:none;letter-spacing:0;
+    color:var(--muted);font-weight:600;padding:4px 26px 4px 0;font-size:.82rem;white-space:nowrap}
+  .coverpage .cov-meta td{border:none;padding:4px 0;color:var(--ink);font-family:"IBM Plex Sans",sans-serif}
+
   /* Print (PDF) */
   @media print{
     :root{--paper:#ffffff}
     .wrap{max-width:none;padding:0}
+    .coverpage{display:flex;flex-direction:column;min-height:96vh;break-after:page;padding:8mm 4mm 4mm}
     h2{break-after:avoid}
     h3{break-after:avoid}
     .tw,.call,figure,.kpi,.flow{break-inside:avoid}
@@ -137,6 +156,29 @@
 </style>
 
 <div class="wrap">
+
+  <div class="coverpage">
+    <div class="cov-top">
+      <div class="cov-brand">RF デザイン株式会社</div>
+      <div class="cov-kind">設計報告書 · Design Report</div>
+    </div>
+    <div class="cov-mid">
+      <div class="cov-rule"></div>
+      <h1 class="cov-title">M バンド GaN<br>低歪増幅器 設計報告</h1>
+      <p class="cov-sub">6.5 GHz 帯 D-STL 送信増幅器 ― 廃番 GaAs から現行 GaN HEMT への置換設計と、
+        64QAM 歪み補償（DPD）の調査・原理検証。</p>
+    </div>
+    <div class="cov-meta">
+      <table><tbody>
+        <tr><th>作成日</th><td>2026 年 9 月 4 日</td></tr>
+        <tr><th>版数</th><td>Rev. 1.0</td></tr>
+        <tr><th>文書番号</th><td>（　　　　　　　　）</td></tr>
+        <tr><th>対象機種</th><td>MN バンド D-STL（DST/DSR-6500SR 後継）</td></tr>
+        <tr><th>作成</th><td>RF デザイン株式会社</td></tr>
+        <tr><th>機密区分</th><td>社外秘 / Confidential</td></tr>
+      </tbody></table>
+    </div>
+  </div>
 
   <header>
     <div class="mast">
