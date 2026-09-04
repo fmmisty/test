@@ -124,6 +124,16 @@
     border-top:1px solid var(--line);padding-top:16px;margin-top:40px}
   .refs{font-size:.82rem;color:var(--muted)}
   .refs li{margin:.3em 0}
+
+  /* Print (PDF) */
+  @media print{
+    :root{--paper:#ffffff}
+    .wrap{max-width:none;padding:0}
+    h2{break-after:avoid}
+    h3{break-after:avoid}
+    .tw,.call,figure,.kpi,.flow{break-inside:avoid}
+    tr,li{break-inside:avoid}
+  }
 </style>
 
 <div class="wrap">
