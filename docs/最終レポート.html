@@ -179,10 +179,10 @@
     <p>放送事業用 <em class="term">M バンド 6.570–6.870 GHz</em> の音声伝送を 64QAM で低歪増幅する。
       本報告の結論は次のとおり ―</p>
     <div class="call">
-      <div class="label">設計方針（結論）</div>
-      <p><strong>C 帯 GaN MMIC PA</strong>（整合・多段を IC 内で解決）を<strong>シングルエンド級 AB で深くバックオフ</strong>し、
-        <strong>強力な放熱</strong>と <strong>DPD（メモリ多項式 7 次・メモリー深さ 5 → 不足時 GMP）</strong>で仕上げる。
-        効率が要件なら <strong>ET</strong>（狭帯域で有利）。<strong>Doherty は 6.5 GHz の 1/4 波長問題で不利。</strong></p>
+      <div class="label">プロジェクトの目的と結論</div>
+      <p><strong>原設計(2020)の 1 W PA は GaAs デバイスで、その GaAs が廃番(EOL)。</strong>これを<strong>現行の C 帯 GaN で作り直す</strong>のが本件。
+        目標は増力ではなく <strong>1 W 仕様（+30 dBm・マスク −37/−48 dBc・占有 ≤405 kHz）の再現</strong>。
+        <strong>GaN MMIC を深くバックオフ</strong>し、GaAs との線形性差は必要に応じ <strong>DPD（MP 7次/深さ5）</strong>で補う（狭帯域 1 W ゆえ DPD 無しで届く公算もあり、まず実測）。</p>
     </div>
   </section>
 
