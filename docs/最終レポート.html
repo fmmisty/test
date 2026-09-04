@@ -161,7 +161,7 @@
       <text x="150" y="140" fill="var(--crit)" font-family="IBM Plex Sans" font-size="11">規格マスク</text>
       <text x="470" y="168" fill="var(--accent-ink)" font-family="IBM Plex Sans" font-size="11">DPD 後 = 綺麗な長方形</text>
     </svg>
-    <figcaption class="fig">図: 目標は「マスクにギリギリ合格」ではなく、帯域内フラット・端が急峻・帯域外は規格より深い矩形にマージンをもって収めること。</figcaption>
+    <figcaption class="fig">図: 実機マスク（−37 dBc@±250 kHz / −48 dBc@±750 kHz, 占有 ≤405 kHz）に、帯域内フラット・端が急峻な矩形をマージンをもって収める。</figcaption>
   </figure>
 
   <div class="kpis">
@@ -169,8 +169,8 @@
     <div class="kpi"><div class="k">DPD後 EVM(模擬)</div><div class="v">2.0<small> %</small></div></div>
     <div class="kpi"><div class="k">DPD後 ACLR(模擬)</div><div class="v">40<small> dB</small></div></div>
     <div class="kpi"><div class="k">実機裏付け ACP</div><div class="v">−57.1<small> dB</small></div></div>
-    <div class="kpi"><div class="k">最大出力(技術条件)</div><div class="v">≤ 2<small> W</small></div></div>
-    <div class="kpi"><div class="k">99% 占有帯</div><div class="v">≤ 405<small> kHz</small></div></div>
+    <div class="kpi"><div class="k">実機 TX 出力</div><div class="v">1<small> W (+30dBm)</small></div></div>
+    <div class="kpi"><div class="k">99% 占有帯 / α</div><div class="v">405<small> kHz / 0.2</small></div></div>
   </div>
 
   <section>
@@ -191,15 +191,15 @@
     <div class="tw"><table>
       <thead><tr><th>項目</th><th>内容</th></tr></thead>
       <tbody>
-        <tr><td>周波数 / 用途</td><td>M バンド 6.570–6.870 GHz（放送事業用）、<strong>音声</strong>伝送（N バンド＝映像は対象外）</td></tr>
-        <tr><td>運用</td><td>単一キャリア・同時運用なし・<strong>周波数アジャイル</strong>（バンド内可変）</td></tr>
-        <tr><td>占有帯域</td><td><strong>99% 占有帯幅 ≤ 405 kHz</strong>（超狭帯域, 性能規定）。<span class="mono">B ≈ R<sub>s</sub>(1+α)</span>。α・R<sub>s</sub>・FEC 等は規制未指定＝<strong>設計値</strong></td></tr>
-        <tr><td>出力電力</td><td><strong>最大 2 W（≒33 dBm）</strong>。標準機 300 mW＋<strong>外付け PA</strong>構成（本件アンプは +8 dB 級の昇圧）</td></tr>
-        <tr><td>変調</td><td>64QAM（ロールオフ α は 405 kHz・隣接妨害・スプリアスを満たす設計値）</td></tr>
-        <tr><td>合否目安</td><td class="mono">EVM ≤ 8&thinsp;% ・ ACLR ≥ ~30&thinsp;dBc（PAPR ゆえ 飽和−7〜9&thinsp;dB バックオフ）</td></tr>
+        <tr><td>周波数 / 用途</td><td>M バンド 6.570–6.870 GHz、<strong>音声</strong>伝送。実機 TX 周波数 <span class="mono">6716.625 MHz</span>（MAF-33）</td></tr>
+        <tr><td>変調（実機）</td><td><strong>64QAM</strong>・シンボルレート <span class="mono">374.4 ksps</span>・<strong>ロールオフ α=0.2</strong>（送受均等＝RRC 各 0.2）</td></tr>
+        <tr><td>占有帯域</td><td><strong>99% 占有帯幅 ≤ 405 kHz</strong>（<span class="mono">R<sub>s</sub>(1+α)</span> と整合）。PAPR ≈ 6〜6.5 dB</td></tr>
+        <tr><td>出力電力</td><td><strong>従来実機 1 W（+30 dBm）</strong>。規制上限 2 W ― 増力時は外付け PA</td></tr>
+        <tr><td>スペクトルマスク（実機）</td><td class="mono">−37 dBc @ fo±250 kHz ／ −48 dBc @ fo±750 kHz（占有 ≤405 kHz, スプリアス ≤50/100 µW）</td></tr>
+        <tr><td>合否目安</td><td class="mono">EVM ≤ 8&thinsp;% ・ 上記マスク遵守（PAPR ゆえバックオフ＋DPD）</td></tr>
       </tbody>
     </table></div>
-    <p style="font-size:.86rem;color:var(--muted);margin-top:8px">出典: 総務省「放送事業用システムの技術的条件」一部答申(2007-10-31)。帯域外スペクトルマスク・周波数偏差・干渉保護比の具体値は概要版に無く、審査基準の別紙＋委員会報告本文で要確認。</p>
+    <p style="font-size:.86rem;color:var(--muted);margin-top:8px">出典: RFデザイン 納入仕様書「DST/DSR-6500SR MN バンド D-STL」(FM 福井向け, 2020)。上位の規制は総務省「放送事業用システムの技術的条件」一部答申(2007)。</p>
   </section>
 
   <section>
@@ -287,8 +287,8 @@
       メモリー効果と DPD にメモリ項が必須であることを数値で確認した。NN-DPD も 64QAM を満たすが、
       よく整合した MP が本モデルでは最良。</p>
     <h3>スペクトル整形（矩形度 vs PAPR）</h3>
-    <p>送信 RRC のロールオフ β を下げるほど矩形に近づくが PAPR が増える（β 0.5→0.1 で PAPR
-      <span class="mono">6.0→7.4 dB</span>）。急峻すぎるとサイドローブが増えマスク余裕を食う。<strong>スイートスポットは β ≈ 0.2〜0.35</strong>。</p>
+    <p>送信 RRC のロールオフ β を下げるほど矩形に近づくが PAPR が増える。<strong>実機は α=0.2</strong>（送受均等）を採用し、
+      占有 ≤405 kHz と実マスク（<span class="mono">−37 dBc@±250 kHz / −48 dBc@±750 kHz</span>）を満たす。α=0.2 の PAPR ≈ 6〜6.5 dB。</p>
 
     <h3>Julia による追加検証 ― PA モデル同定（合成データ・別試験）</h3>
     <p><strong>Windows / Julia 1.12.7</strong> で <span class="mono">dpd_model_from_data.jl</span> を実行し、合成データで PA モデルを同定した
@@ -322,10 +322,10 @@
       </tbody>
     </table></div>
     <div class="call">
-      <div class="label">電力バジェット（2 W ＝平均で確定）</div>
-      <p>2 W は<strong>平均電力</strong>（パワーメータ／スペアナのチャネルパワー測定＝平均）。単一キャリア 64QAM の PAPR ≈ 6〜7 dB ゆえ
-        <strong>尖頭 ~8〜10 W</strong> → デバイス Psat は <strong>10〜25 W 級</strong>。CMPA601C025F(25W) が線形余裕あり、
-        QPA1013D(10W) は DPD 前提で可。CMD184(4.5W) は平均 2 W には小さい。</p>
+      <div class="label">電力バジェット（実機 1 W／規制上限 2 W）</div>
+      <p>出力は平均電力（パワーメータ／スペアナ測定）。<strong>従来実機 1 W(+30 dBm)</strong>、α=0.2 の PAPR ≈ 6.5 dB →
+        <strong>尖頭 ~4.5 W</strong>。増力 2 W なら尖頭 ~9 W。線形（マスク −37/−48 dBc）確保に <strong>Psat 10〜25 W 級</strong>が安全 →
+        QPA1013D(10W) / CMPA601C025F(25W) は <strong>1 W でも 2 W でも適合</strong>。CMD184(4.5W) は尖頭に不足。</p>
     </div>
     <div class="call">
       <div class="label">MMIC が楽な理由と、残る作り込み</div>
