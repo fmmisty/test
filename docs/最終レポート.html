@@ -312,20 +312,20 @@
   <section>
     <h2><span class="n">07</span>デバイス（石）の方針</h2>
     <p class="lead">6.5 GHz では MMIC が実装を最も楽にする。</p>
-    <p class="lead" style="margin-top:-.4em">確定条件（≤2W・6.57–6.87 GHz）での外付け PA 候補：</p>
+    <p class="lead" style="margin-top:-.4em">確定条件（<strong>平均 2 W</strong>・6.57–6.87 GHz）での外付け PA 候補：</p>
     <div class="tw"><table>
-      <thead><tr><th>ベンダー / 型番</th><th>周波数</th><th>出力・形態</th></tr></thead>
+      <thead><tr><th>ベンダー / 型番</th><th>周波数</th><th>Psat・形態</th></tr></thead>
       <tbody>
-        <tr class="best"><td><strong>Qorvo CMD184</strong>（GaN MMIC ダイ）</td><td class="mono">0.5–20 GHz</td><td class="mono">P1dB 34.5dBm(2.8W)/Psat 36.5dBm(4.5W), G&gt;13dB ― 6.5帯を余裕でカバー</td></tr>
-        <tr><td>Wolfspeed/MACOM CGHV1F006S</td><td class="mono">5.5–6.5 GHz</td><td>~8W, 40V, 無整合。上端 6.87 は要評価</td></tr>
-        <tr><td>住友 SGK5867-30A（参考）</td><td class="mono">5.85–6.75 GHz</td><td>内部整合, P5dB≈45dBm。上端 6.87 は範囲外</td></tr>
+        <tr class="best"><td><strong>Wolfspeed CMPA601C025F</strong></td><td class="mono">6.0–12.0 GHz</td><td class="mono">25 W(44dBm), GaN MMIC 内部整合 ― 尖頭に~4dB余裕で64QAM線形に好適</td></tr>
+        <tr><td>Qorvo QPA1013D</td><td class="mono">6–18 GHz</td><td class="mono">&gt;10 W(40dBm), GaN MMIC ― DPD＋バックオフ前提でコンパクト</td></tr>
+        <tr><td>Qorvo CMD184（参考）</td><td class="mono">0.5–20 GHz</td><td class="mono">4.5 W(36.5dBm) ― 2W“平均”には小、ドライバ用途</td></tr>
       </tbody>
     </table></div>
     <div class="call">
-      <div class="label">電力バジェットの要確認（デバイスを分ける）</div>
-      <p>「2 W」が<strong>平均か尖頭か</strong>で必要 Psat が変わる。単一キャリア 64QAM の PAPR ≈ 6〜7 dB。
-        <strong>2 W が尖頭</strong>（or DPD で深バックオフ許容）→ <strong>CMD184（Psat 4.5W）で最適</strong>。
-        <strong>2 W が平均</strong>→ 尖頭 ~8〜10 W で Psat 10〜15 W 級（C/X 帯 GaN）が要る。空中線電力の規定を要確認。</p>
+      <div class="label">電力バジェット（2 W ＝平均で確定）</div>
+      <p>2 W は<strong>平均電力</strong>（パワーメータ／スペアナのチャネルパワー測定＝平均）。単一キャリア 64QAM の PAPR ≈ 6〜7 dB ゆえ
+        <strong>尖頭 ~8〜10 W</strong> → デバイス Psat は <strong>10〜25 W 級</strong>。CMPA601C025F(25W) が線形余裕あり、
+        QPA1013D(10W) は DPD 前提で可。CMD184(4.5W) は平均 2 W には小さい。</p>
     </div>
     <div class="call">
       <div class="label">MMIC が楽な理由と、残る作り込み</div>
