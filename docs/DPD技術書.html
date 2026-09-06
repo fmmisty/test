@@ -1,0 +1,872 @@
+<title>デジタル・プリディストーション技術書</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#f5f7f7; --surface:#ffffff; --panel:#eef2f2;
+    --ink:#15201f; --muted:#586867; --faint:#8a9998;
+    --line:#d7dedd; --line-strong:#c2cbca;
+    --accent:#0e7c86; --accent-soft:#0e7c8618; --accent-ink:#0b5b63;
+    --good:#2e7d5b; --warn:#a5701f; --crit:#b03a3a;
+    --shadow:0 1px 2px rgba(20,40,40,.05),0 6px 20px rgba(20,40,40,.05);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#0c1112; --surface:#121a1b; --panel:#161f20;
+      --ink:#e7eeed; --muted:#9fb0ae; --faint:#6d7d7c;
+      --line:#243130; --line-strong:#31413f;
+      --accent:#3fb6c0; --accent-soft:#3fb6c022; --accent-ink:#7fd6dd;
+      --good:#4bbd87; --warn:#d29a4a; --crit:#e0716b;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 26px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0c1112; --surface:#121a1b; --panel:#161f20;
+    --ink:#e7eeed; --muted:#9fb0ae; --faint:#6d7d7c;
+    --line:#243130; --line-strong:#31413f;
+    --accent:#3fb6c0; --accent-soft:#3fb6c022; --accent-ink:#7fd6dd;
+    --good:#4bbd87; --warn:#d29a4a; --crit:#e0716b;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Serif",Georgia,serif;line-height:1.72;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:820px;margin:0 auto;padding:clamp(20px,5vw,56px) clamp(18px,5vw,44px)}
+  h1,h2,h3,h4,.label,.eyebrow,th,.mono,.fig,.chip,.toc,.chap-kicker,.cov-brand,.cov-kind{font-family:"IBM Plex Sans",system-ui,sans-serif}
+  .mono,.num,.eq{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+  /* Cover */
+  .coverpage{display:flex;flex-direction:column;min-height:94vh;border-top:4px solid var(--accent);padding-top:22px}
+  .cov-top{display:flex;justify-content:space-between;align-items:baseline}
+  .cov-brand{font-weight:700;font-size:1.02rem;color:var(--ink)}
+  .cov-kind{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:600}
+  .cov-mid{margin-top:26vh}
+  .cov-rule{height:4px;width:64px;background:var(--accent);margin-bottom:22px}
+  .cov-title{font-family:"IBM Plex Sans",sans-serif;font-size:2.6rem;line-height:1.12;font-weight:700;letter-spacing:-.01em;margin:0}
+  .cov-en{font-family:"IBM Plex Sans",sans-serif;font-size:1.02rem;color:var(--accent-ink);font-weight:600;letter-spacing:.02em;margin:.6em 0 0}
+  .cov-sub{color:var(--muted);font-size:1.05rem;margin:.7em 0 0;max-width:54ch}
+  .cov-meta{margin-top:auto;border-top:1px solid var(--line);padding-top:16px;font-family:"IBM Plex Sans",sans-serif;font-size:.86rem;color:var(--muted)}
+  .cov-meta b{color:var(--ink);font-weight:600}
+
+  h2{font-size:1.28rem}
+  p{margin:.75em 0}
+  .wrap p, .wrap li{max-width:70ch}
+  ul,ol{padding-left:1.25em;margin:.6em 0}
+  li{margin:.4em 0}
+  strong{font-weight:600}
+  em.term{font-style:normal;background:var(--accent-soft);padding:.05em .35em;border-radius:4px;
+    font-family:"IBM Plex Mono",monospace;font-size:.9em}
+  a{color:var(--accent-ink)}
+
+  /* front matter */
+  .frontmatter h2{border-bottom:1px solid var(--line);padding-bottom:8px;margin:0 0 10px;font-weight:600}
+  .lede{color:var(--muted);font-size:1.02rem}
+
+  /* TOC */
+  .toc{font-size:.92rem;line-height:1.5}
+  .toc .c{display:flex;gap:12px;margin:.5em 0;font-weight:600}
+  .toc .c .cn{color:var(--accent);font-family:"IBM Plex Mono",monospace;flex:0 0 auto;width:2.4em}
+  .toc .s{display:flex;gap:12px;margin:.2em 0 .2em 3.4em;color:var(--muted);font-weight:400;font-family:"IBM Plex Sans",sans-serif;font-size:.86rem}
+
+  /* chapter opener */
+  .chap{margin-top:8px}
+  .chap-head{border-top:3px solid var(--accent);padding-top:16px;margin:0 0 20px}
+  .chap-kicker{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent-ink);font-weight:600}
+  .chap-num{font-family:"IBM Plex Sans",sans-serif;font-size:.9rem;color:var(--accent);font-weight:600}
+  .chap-title{font-family:"IBM Plex Sans",sans-serif;font-size:1.9rem;line-height:1.14;font-weight:700;letter-spacing:-.01em;margin:.15em 0 0}
+  h3{font-family:"IBM Plex Sans",sans-serif;font-size:1.12rem;font-weight:600;margin:1.6em 0 .3em;
+    padding-bottom:5px;border-bottom:1px solid var(--line)}
+  h4{font-family:"IBM Plex Sans",sans-serif;font-size:.98rem;font-weight:600;margin:1.2em 0 .2em;color:var(--accent-ink)}
+
+  /* equation */
+  .eq{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin:14px 0;
+    font-size:.92rem;overflow-x:auto;white-space:nowrap}
+  .eq .n{float:right;color:var(--faint);font-size:.82rem}
+
+  /* tables */
+  .tw{overflow-x:auto;margin:1.1em 0;border:1px solid var(--line);border-radius:10px}
+  table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:440px}
+  th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{background:var(--panel);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+  td.num,th.num{text-align:right;font-family:"IBM Plex Mono",monospace}
+  .best td{background:var(--accent-soft)}
+
+  /* callout */
+  .call{border:1px solid var(--line-strong);border-left:3px solid var(--accent);background:var(--surface);
+    border-radius:0 10px 10px 0;padding:14px 20px;margin:18px 0;box-shadow:var(--shadow)}
+  .call.crit{border-left-color:var(--crit)}
+  .call .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent-ink);font-weight:600;margin-bottom:4px;font-family:"IBM Plex Sans",sans-serif}
+  .call.crit .label{color:var(--crit)}
+  .call p{margin:.3em 0}
+  .call.paper{border-left-color:var(--muted);background:var(--panel)}
+  .call.paper .label{color:var(--muted)}
+
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0;font-family:"IBM Plex Sans",sans-serif;font-size:.82rem}
+  .node{background:var(--panel);border:1px solid var(--line-strong);border-radius:8px;padding:7px 11px;white-space:nowrap}
+  .node.acc{border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+  .arrow{color:var(--faint)}
+
+  /* references */
+  .refs{font-size:.84rem;color:var(--muted);counter-reset:ref}
+  .refs li{margin:.5em 0}
+
+  hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+  .foot{color:var(--faint);font-size:.8rem;font-family:"IBM Plex Sans",sans-serif;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;border-top:1px solid var(--line);padding-top:16px;margin-top:34px}
+
+  @media print{
+    :root{--paper:#ffffff}
+    .wrap{max-width:none;padding:0 2mm}
+    .coverpage{min-height:96vh;break-after:page;padding:8mm 4mm 4mm}
+    .frontmatter section{break-after:page}
+    .chap{break-before:page}
+    h3,h4{break-after:avoid}
+    .tw,.call,figure,.flow,.eq{break-inside:avoid}
+    tr,li{break-inside:avoid}
+  }
+</style>
+
+<div class="wrap">
+
+<!-- ===================== COVER ===================== -->
+<div class="coverpage">
+  <div class="cov-top">
+    <div class="cov-brand">RF デザイン株式会社</div>
+    <div class="cov-kind">技術書 · Technical Monograph</div>
+  </div>
+  <div class="cov-mid">
+    <div class="cov-rule"></div>
+    <h1 class="cov-title">電力増幅器の<br>デジタル・プリディストーション</h1>
+    <div class="cov-en">Digital Predistortion of RF Power Amplifiers ― Theory, Literature and Products</div>
+    <p class="cov-sub">メモリー効果を含む非線形歪みの補償技術を、原理・主要論文・製品実装の三方向から体系的にまとめた実務者のための一冊。</p>
+  </div>
+  <div class="cov-meta">
+    <p><b>版数</b> 第1版 (Rev. 1.0)　　<b>発行</b> 2026 年 9 月　　<b>編</b> RF デザイン株式会社</p>
+    <p><b>対象読者</b> RF/通信の設計・実装技術者、DSP/FPGA 技術者　　<b>機密区分</b> 社外秘 / Confidential</p>
+  </div>
+</div>
+
+<!-- ===================== FRONT MATTER ===================== -->
+<div class="frontmatter">
+
+<section>
+  <h2>まえがき</h2>
+  <p class="lede">本書は、6.5 GHz 帯 GaN HEMT 電力増幅器（PA）の低歪化を検討する過程で調査した
+    「デジタル・プリディストーション（DPD）」の知見を、一冊の技術書として再構成したものである。</p>
+  <p>無線通信の高効率化と高品質化は、本質的に相反する。電力増幅器を効率よく動かそうとすれば
+    飽和近くで使うことになり、そこでは信号が歪む。64QAM や OFDM のように振幅方向へ情報を載せる
+    近代的な変調方式では、この歪みが直ちに <em class="term">EVM</em> の劣化と
+    <em class="term">隣接チャネル漏洩（ACLR）</em> として現れ、スペクトルマスクを侵す。
+    <strong>DPD は、この矛盾を「増幅器の逆特性をデジタル信号処理であらかじめ与える」ことで解く技術</strong>である。</p>
+  <p>DPD の難しさの大半は、単純な瞬時非線形（AM/AM・AM/PM）ではなく、
+    <strong>メモリー効果</strong>――出力が現在の入力だけでなく過去の入力にも依存する現象――にある。
+    とくに GaN HEMT では、自己発熱による熱メモリーや、トラップ（電流コラプス）に起因する
+    長い時定数のメモリーが支配的になり、これを扱えるモデル（メモリ多項式、一般化メモリ多項式、
+    Volterra 級数、近年ではニューラルネットワーク）と、その係数を実機から同定する枠組み
+    （間接学習／直接学習）が DPD 研究の中心的な主題となってきた。</p>
+  <p>本書は三つの視点で構成する。第一に<strong>原理</strong>（第1〜4章）、第二に<strong>論文で調べたこと</strong>
+    （第5・6章）、第三に<strong>製品・実装で調べたやり方</strong>（第7〜9章）である。
+    最後に、我々自身の 6.5 GHz プロジェクトを<strong>ケーススタディ</strong>（第10章）として置き、
+    理論と実務を結ぶ。数式は最小限に留め、意味と実装上の含意を重視した。</p>
+  <div class="call">
+    <div class="label">本書の使い方</div>
+    <p>通読する必要はない。DPD をこれから始める読者は第1〜4章を、文献の勘所を掴みたい読者は第5・6章を、
+      製品選定・実装に携わる読者は第7〜9章を、それぞれ独立に読める構成にした。
+      各章末に「実務への含意」を置いている。</p>
+  </div>
+</section>
+
+<section>
+  <h2>目次</h2>
+  <div class="toc">
+    <div class="c"><span class="cn">1</span><span>序論 ― なぜデジタル・プリディストーションか</span></div>
+    <div class="s"><span>1.1 効率と線形性のトレードオフ　1.2 品質指標（EVM/ACLR/マスク）　1.3 線形化技術の系譜　1.4 本書の構成</span></div>
+    <div class="c"><span class="cn">2</span><span>電力増幅器の非線形性とメモリー効果</span></div>
+    <div class="s"><span>2.1 AM/AM・AM/PM　2.2 メモリー効果とは　2.3 電気的メモリー　2.4 熱メモリー　2.5 トラップ／電流コラプス　2.6 メモリーの測定</span></div>
+    <div class="c"><span class="cn">3</span><span>DPD の基礎理論</span></div>
+    <div class="s"><span>3.1 逆関数としての予歪　3.2 メモリレス多項式　3.3 メモリ多項式(MP)　3.4 一般化メモリ多項式(GMP)　3.5 Volterra とブロック構造</span></div>
+    <div class="c"><span class="cn">4</span><span>係数同定と適応</span></div>
+    <div class="s"><span>4.1 直接学習と間接学習　4.2 最小二乗・正則化・条件数　4.3 適応アルゴリズム　4.4 観測受信機と帯域</span></div>
+    <div class="c"><span class="cn">5</span><span>主要論文レビュー ― 論文で調べたこと</span></div>
+    <div class="s"><span>5.1 MP の起源　5.2 Ku&amp;Kenney　5.3 Boumaiza 熱メモリー　5.4 Morgan GMP　5.5 Katz　5.6 Volterra 系　5.7 ILA の起源　5.8 総括</span></div>
+    <div class="c"><span class="cn">6</span><span>AI／機械学習による DPD</span></div>
+    <div class="s"><span>6.1 なぜ NN か　6.2 代表的構造　6.3 学習と汎化　6.4 オープン実装　6.5 長所と限界</span></div>
+    <div class="c"><span class="cn">7</span><span>効率向上技術との統合</span></div>
+    <div class="s"><span>7.1 Doherty　7.2 エンベロープ・トラッキング　7.3 EER/LINC　7.4 DPD との協調</span></div>
+    <div class="c"><span class="cn">8</span><span>製品・実装事例 ― 製品で調べたやり方</span></div>
+    <div class="s"><span>8.1 全体像　8.2 放送・特機の実機　8.3 トランシーバ内蔵 DPD　8.4 FPGA/RFSoC　8.5 測定器　8.6 設計ツール</span></div>
+    <div class="c"><span class="cn">9</span><span>実装の実務</span></div>
+    <div class="s"><span>9.1 次数・深さの選定　9.2 数値条件　9.3 量子化　9.4 レイテンシと同期　9.5 検証フロー</span></div>
+    <div class="c"><span class="cn">10</span><span>ケーススタディ：6.5 GHz M バンド GaN</span></div>
+    <div class="s"><span>10.1 要求　10.2 メモリー実証　10.3 DPD 効果　10.4 バックオフ vs マスク　10.5 デバイス選定</span></div>
+    <div class="c"><span class="cn">11</span><span>まとめと今後の展望</span></div>
+    <div class="s"><span>付録A 記号・用語　付録B 数式まとめ　参考文献</span></div>
+  </div>
+</section>
+
+</div><!-- /frontmatter -->
+
+<!-- ===================== CHAPTER 1 ===================== -->
+<div class="chap">
+  <div class="chap-head">
+    <div class="chap-kicker">Chapter</div>
+    <div class="chap-num">第 1 章</div>
+    <h2 class="chap-title">序論 ― なぜデジタル・プリディストーションか</h2>
+  </div>
+
+  <p>本章では、DPD が解こうとしている問題を定義する。すなわち<strong>「効率と線形性のトレードオフ」</strong>である。
+    続いて線形性の良し悪しを測る品質指標を導入し、歴史的に用いられてきた線形化技術を俯瞰して、
+    なぜ今日 DPD が主流になったのかを示す。</p>
+
+  <h3>1.1 効率と線形性のトレードオフ</h3>
+  <p>電力増幅器の電力効率は、出力を飽和点（P<sub>sat</sub>）に近づけるほど高くなる。B 級・AB 級では
+    理想効率は飽和で最大となり、深いバックオフでは急速に低下する。ところが、飽和近傍は
+    まさに<strong>利得が圧縮し位相が回る非線形領域</strong>であり、振幅情報を持つ変調波はここで歪む。</p>
+  <p>問題を難しくするのが<strong>ピーク対平均電力比（PAPR）</strong>である。64QAM 単一キャリアで
+    ロールオフ α=0.2 の場合 PAPR はおよそ 6〜6.5 dB、OFDM では 10〜12 dB に達する。
+    平均電力を P<sub>sat</sub> から PAPR ぶん下げても、瞬時のピークは飽和に届く。
+    したがって線形性を確保するには、平均をさらに数 dB 下げる「<em class="term">出力バックオフ（OBO）</em>」が必要になり、
+    その代償として効率が落ちる。<strong>DPD の狙いは、このバックオフを浅くしても線形性を保ち、効率と品質を同時に得ること</strong>にある。</p>
+
+  <h3>1.2 品質指標 ― EVM・ACLR・スペクトルマスク</h3>
+  <p>線形性は最終的に次の三つで評価される。</p>
+  <div class="tw"><table>
+    <thead><tr><th>指標</th><th>意味</th><th>目安（例）</th></tr></thead>
+    <tbody>
+      <tr><td><strong>EVM</strong>（誤差ベクトル振幅）</td><td>理想シンボルからの誤差の RMS。復調品質＝帯域内歪みの総和</td><td>64QAM で ≤ 8&thinsp;%（≒ −22 dB）</td></tr>
+      <tr><td><strong>ACLR / ACPR</strong></td><td>隣接チャネルへの漏洩電力比。帯域外再成長（スペクトル肩）の指標</td><td>用途により 30〜60 dBc</td></tr>
+      <tr><td><strong>スペクトルマスク</strong></td><td>周波数オフセット毎の漏洩電力の上限を規定した規格線</td><td>放送 STL 例：−37 dBc@±250 kHz / −48 dBc@±750 kHz</td></tr>
+    </tbody>
+  </table></div>
+  <p>EVM は「中身の綺麗さ」、ACLR とマスクは「隣への迷惑」を表す。DPD は両方を同時に改善するが、
+    支配的に効くのは多くの場合<strong>マスクの近接オフセット（＝スペクトルの肩）</strong>である。
+    非線形は 3 次・5 次の相互変調（IMD）としてキャリア近傍にスペクトル再成長を作り、これがマスクを侵すからだ。</p>
+
+  <h3>1.3 線形化技術の系譜</h3>
+  <p>線形化には歴史的に複数の系統がある。DPD の位置づけを理解するため、簡潔に対比する。</p>
+  <div class="tw"><table>
+    <thead><tr><th>方式</th><th>原理</th><th>長所 / 短所</th></tr></thead>
+    <tbody>
+      <tr><td>アナログ・プリディストーション</td><td>ダイオード等で逆特性を近似</td><td>広帯域・低遅延 / 補正力が弱くメモリーに弱い</td></tr>
+      <tr><td>フィードフォワード</td><td>誤差信号を抽出し逆相合成</td><td>高線形・広帯域 / 効率低下・調整難・部品多</td></tr>
+      <tr><td>直交/極 フィードバック</td><td>復調誤差を負帰還</td><td>簡素 / 帯域・安定性に制約</td></tr>
+      <tr><td class="best"><strong>デジタル・プリディストーション（DPD）</strong></td><td>PA の逆モデルを DSP で適用</td><td><strong>補正力大・メモリー対応・適応可 / 観測受信機と演算資源が必要</strong></td></tr>
+    </tbody>
+  </table></div>
+  <p>デジタル信号処理と高速 DAC/ADC の低廉化により、2000 年代以降 DPD が主流となった。
+    <strong>補正力の高さ・メモリー効果への対応・温度や電源変動への適応性</strong>という三点で他方式に勝るからである。
+    以降、本書では線形化＝DPD を中心に論じる。</p>
+
+  <h3>1.4 本書の構成</h3>
+  <p>第2章で歪みとメモリー効果の物理を、第3・4章で DPD のモデルと同定法を扱う（原理）。
+    第5・6章で古典論文と機械学習の文献を整理する（論文で調べたこと）。
+    第7〜9章で効率向上技術との統合、商用製品、実装の実務を述べる（製品で調べたやり方）。
+    第10章で 6.5 GHz プロジェクトの実例を、第11章で総括を示す。</p>
+  <div class="call">
+    <div class="label">第1章 実務への含意</div>
+    <p>設計初期に「どのマスクの、どのオフセットが効くか」を見極めよ。多くの設計で律速するのは
+      EVM ではなく近接 ACLR／マスクであり、DPD 投資対効果もそこで決まる。</p>
+  </div>
+</div>
+
+<!-- ===================== CHAPTER 2 ===================== -->
+<div class="chap">
+  <div class="chap-head">
+    <div class="chap-kicker">Chapter</div>
+    <div class="chap-num">第 2 章</div>
+    <h2 class="chap-title">電力増幅器の非線形性とメモリー効果</h2>
+  </div>
+  <p>DPD が補正すべき対象＝ PA の非線形特性を、瞬時特性（AM/AM・AM/PM）と、
+    過去に依存する成分（メモリー効果）に分けて解説する。GaN 特有のトラップ現象まで踏み込み、
+    最後にメモリー効果の測定法を述べる。</p>
+
+  <h3>2.1 AM/AM と AM/PM</h3>
+  <p>最も基本的な非線形は、入力包絡線振幅 r=|x| に対する<strong>利得圧縮（AM/AM）</strong>と
+    <strong>位相回転（AM/PM）</strong>である。理想的な線形増幅では出力＝一定利得×入力だが、
+    実際には振幅が上がるほど利得が下がり（圧縮）、同時に位相が変化する。</p>
+  <div class="eq">y(t) = G·[ 1 + a₂|x| + a₃|x|² + … ]·x(t)　（瞬時＝メモリレス多項式近似）<span class="n">(2.1)</span></div>
+  <p>メモリレスなら、DPD は静的な逆特性テーブル（ルックアップ）で足りる。だが実際の PA は
+    (2.1) だけでは説明できない。同じ瞬時振幅でも、直前の信号履歴によって出力が変わる――これがメモリー効果である。</p>
+
+  <h3>2.2 メモリー効果とは</h3>
+  <p>メモリー効果とは、<strong>出力 y[n] が現在の入力 x[n] だけでなく、過去の入力 x[n−1], x[n−2], … にも依存する</strong>現象を指す。
+    症状としては、(i) 上下側波帯の相互変調（IM3）が<strong>非対称</strong>になる、(ii) AM/AM 曲線が単線でなく
+    <strong>ヒステリシス状に太る</strong>、(iii) 歪みが<strong>変調帯域（包絡線周波数）に依存</strong>する、といった形で観測される。</p>
+  <p>原因は次の三系統に整理できる。時定数の速い順に、電気的・トラップ・熱である。</p>
+  <div class="tw"><table>
+    <thead><tr><th>種類</th><th>物理的起源</th><th class="num">代表時定数</th><th>狭帯域化の影響</th></tr></thead>
+    <tbody>
+      <tr><td>電気的メモリー</td><td>整合・バイアス回路のインピーダンスが周波数依存（特にビデオ帯域＝包絡線帯域）</td><td class="num">〜数十 MHz</td><td>楽になる（デカップリングで対処可）</td></tr>
+      <tr><td>トラップ由来</td><td>半導体トラップ準位の捕獲・放出（GaN の電流コラプス／ゲート・ドレインラグ）</td><td class="num">µs 〜 ms</td><td>残る／むしろ効く</td></tr>
+      <tr><td>熱メモリー</td><td>自己発熱によるチャネル温度変化と特性ドリフト</td><td class="num">ms 〜</td><td>残る／むしろ効く</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>2.3 電気的メモリー ― ビデオ帯域インピーダンス</h3>
+  <p>PA のドレインバイアス経路が、包絡線（ビデオ）周波数でゼロでないインピーダンスを持つと、
+    ドレイン電圧が包絡線に応じて変動し、これが利得・位相を包絡線周波数で変調する。
+    結果として IM3 の非対称や、変調帯域に依存する歪みが生じる。
+    対策は明快で、<strong>バイアス経路のビデオ帯域インピーダンスを広帯域に低く保つ</strong>こと
+    ――大容量から小容量まで段階的なデカップリング、低 ESR/ESL の実装、給電線の設計である。
+    狭帯域信号ほど包絡線周波数が低く、対処は容易になる。</p>
+
+  <h3>2.4 熱メモリー ― 自己発熱</h3>
+  <p>PA は消費電力の一部を熱に変える。平均電力が変わればチャネル温度が変わり、利得や
+    しきい値がドリフトする。熱時定数はミリ秒以上と遅く、<strong>信号の低周波成分（数 kHz 以下）に追従してしまう</strong>。
+    ここに重要な逆説がある。<strong>狭帯域（音声など）ほど包絡線がゆっくり変化するため、
+    遅い熱・トラップのメモリーが信号に追従しやすく、むしろ顕在化する</strong>のである。
+    「狭帯域だからメモリーは無視できる」という直感は誤りで、正しくは「効くメモリーの種類が電気系から
+    熱・トラップ系へ移る」と理解すべきだ。対策は放熱設計（低熱抵抗の実装、ヒートスプレッダ）と、
+    DPD 側での長時定数補償である。</p>
+
+  <h3>2.5 トラップと電流コラプス（GaN 固有）</h3>
+  <p>GaN HEMT では、表面準位やバッファ層のトラップが電子を捕獲・放出することで、
+    ドレイン電流が過渡的に低下する<strong>電流コラプス（current collapse）</strong>や、
+    ゲート/ドレイン・ラグと呼ばれる過渡応答が生じる。時定数はマイクロ〜ミリ秒で、
+    DC-I/V とパルス I/V の乖離（<em class="term">DC-RF 分散</em>）として現れる。
+    これは静的 AM/AM には現れにくい一方、動的な信号では確実に歪みとメモリーを生む。
+    <strong>デバイス選定では「電流コラプスの小さい／線形グレードの品種」を優先する</strong>ことが、
+    DPD の負担を根本から軽くする。</p>
+
+  <h3>2.6 メモリー効果の測定</h3>
+  <p>メモリー効果の有無・大きさは、以下で定量化できる。</p>
+  <ul>
+    <li><strong>Two-tone IM3 非対称</strong>：2 音を入れ、上側 IM3 と下側 IM3 のレベル差・位相差を、
+      トーン間隔（＝包絡線周波数）を変えながら測る。差が間隔に依存すればメモリーあり。</li>
+    <li><strong>AM/AM・AM/PM の分散</strong>：変調信号で瞬時振幅に対する利得・位相をプロットし、
+      単線からの「太り」を見る。太りの幅がメモリーの強さ。</li>
+    <li><strong>包絡線帯域スイープ</strong>：同一 PAPR で信号帯域を変え、ACLR の変化を追う。</li>
+    <li><strong>NMSE / 残差</strong>：メモリレス vs メモリありモデルで PA 出力を予測し、
+      正規化平均二乗誤差の差でメモリー寄与を測る。</li>
+  </ul>
+  <div class="call crit">
+    <div class="label">第2章 実務への含意（決定的な教訓）</div>
+    <p>静的な AM/AM・AM/PM が同じ 2 台の増幅器でも、<strong>バイアス回路（＝ビデオ帯域インピーダンス）を
+      変えただけで DPD 後の性能が大きく変わり得る</strong>。歪み補償はモデル選びの前に、まず
+      「メモリーを作らない回路・放熱・デバイス」で下地を整えることが本質である。DPD は最後の仕上げに過ぎない。</p>
+  </div>
+</div>
+
+<!-- ===================== CHAPTER 3 ===================== -->
+<div class="chap">
+  <div class="chap-head">
+    <div class="chap-kicker">Chapter</div>
+    <div class="chap-num">第 3 章</div>
+    <h2 class="chap-title">DPD の基礎理論</h2>
+  </div>
+  <p>本章では DPD のモデルを、メモリレス多項式から、実務標準のメモリ多項式（MP）、
+    一般化メモリ多項式（GMP）、そして一般論としての Volterra 級数・ブロック構造モデルへと積み上げる。</p>
+
+  <h3>3.1 逆関数としての予歪</h3>
+  <p>PA の入出力を y = f(x) とすると、DPD は理想的には f の逆関数 f⁻¹ を前置し、
+    全体を線形（一定利得 G）にする操作である。</p>
+  <div class="eq">PA( DPD(x) ) = G·x　⇔　DPD(x) ≈ f⁻¹(G·x)<span class="n">(3.1)</span></div>
+  <p>実際の f は解析的な逆関数を持たないため、<strong>逆特性を有限のパラメータで近似する
+    「振る舞いモデル（behavioral model）」</strong>を用い、その係数を実機データから同定する。
+    モデルは「表現力」と「係数数（＝演算量・過学習リスク）」のトレードオフで選ぶ。</p>
+
+  <h3>3.2 メモリレス多項式</h3>
+  <p>最も単純なモデルは、瞬時振幅の奇数次多項式である。</p>
+  <div class="eq">y[n] = Σ<sub>k=1,3,5,…</sub> a<sub>k</sub> · x[n] · |x[n]|<sup>k−1</sup><span class="n">(3.2)</span></div>
+  <p>実装はルックアップテーブル（LUT）で軽い。だがメモリー効果を全く表現できないため、
+    メモリーが顕著な PA では EVM・ACLR が頭打ちになる（第10章の数値例では EVM 7.5% で飽和）。</p>
+
+  <h3>3.3 メモリ多項式（Memory Polynomial, MP）</h3>
+  <p>メモリレス多項式に<strong>遅延タップ</strong>を加えたものがメモリ多項式である。実務の第一選択となる。</p>
+  <div class="eq">y[n] = Σ<sub>m=0</sub><sup>M</sup> Σ<sub>k=1,3,5,…</sub><sup>K</sup> a<sub>k,m</sub> · x[n−m] · |x[n−m]|<sup>k−1</sup><span class="n">(3.3)</span></div>
+  <p>ここで K は非線形次数、M はメモリー深さ。物理的には「各遅延ぶんの過去入力を、それぞれ多項式で
+    重み付けして足す」ことを意味する。係数数は概ね ⌈K/2⌉×(M+1)。たとえば 7 次・深さ 5 なら 4×6＝24 係数。
+    Volterra 級数の対角項のみを残した部分集合に相当し、<strong>表現力と実装コストのバランスに優れる</strong>。</p>
+
+  <h3>3.4 一般化メモリ多項式（Generalized Memory Polynomial, GMP）</h3>
+  <p>MP は「同一時刻の振幅と信号」を掛ける対角項のみを持つ。GMP はこれに、
+    <strong>信号と、時間的にずれた包絡線の交差項</strong>（lagging / leading cross-terms）を加えて表現力を高める。</p>
+  <div class="eq">y[n] = Σ a<sub>k,m</sub> x[n−m]|x[n−m]|<sup>k−1</sup> + Σ b<sub>k,m,l</sub> x[n−m]|x[n−m−l]|<sup>k−1</sup> + Σ c<sub>k,m,l</sub> x[n−m]|x[n−m+l]|<sup>k−1</sup><span class="n">(3.4)</span></div>
+  <p>交差項は、包絡線が過去（または未来）のどの時点で大きかったかを効かせるもので、
+    強いメモリーや広帯域で MP を上回ることがある。ただし係数が増えるため、
+    <strong>NMSE の改善幅と係数増加を天秤にかける</strong>（第10章では GMP は MP 比 +18 係数で改善わずか 0.03 dB＝MP で十分だった）。</p>
+
+  <h3>3.5 Volterra 級数とブロック構造モデル</h3>
+  <p>最も一般的な非線形＋メモリーの表現は<strong>Volterra 級数</strong>である。任意の弱非線形・
+    有限メモリー系を核（kernel）で表せるが、係数が次数・メモリーに対して爆発的に増えるため、
+    そのままでは実用にならない。MP・GMP はその実用的な部分集合と位置づけられる。
+    ほかに、線形フィルタと静的非線形を縦続にした<strong>Wiener（LN）／Hammerstein（NL）</strong>、
+    両者を挟む<strong>Wiener–Hammerstein</strong> といったブロック構造モデルがあり、
+    物理的解釈がしやすい反面、表現力は構造に縛られる。</p>
+  <div class="call">
+    <div class="label">第3章 実務への含意</div>
+    <p>まず MP（7 次・深さ 5 前後）から始め、ACLR/マスクが足りない時だけ GMP の交差項を足す。
+      Volterra 全項や高すぎる次数は、係数増と過学習・数値条件悪化を招く。<strong>「効く最小のモデル」</strong>が正解である。</p>
+  </div>
+</div>
+
+<!-- ===================== CHAPTER 4 ===================== -->
+<div class="chap">
+  <div class="chap-head">
+    <div class="chap-kicker">Chapter</div>
+    <div class="chap-num">第 4 章</div>
+    <h2 class="chap-title">係数同定と適応</h2>
+  </div>
+  <p>モデルを決めても、係数を実機から正しく求めなければ DPD は働かない。本章では
+    間接学習・直接学習の二枠組み、最小二乗と正則化、適応アルゴリズム、そして観測受信機の要件を扱う。</p>
+
+  <h3>4.1 直接学習（DLA）と間接学習（ILA）</h3>
+  <p><strong>間接学習（Indirect Learning Architecture, ILA）</strong>は、PA の「後段逆モデル（post-inverse）」を
+    まず同定し、それを予歪器へコピーする手法である。PA 出力を利得で正規化した信号 z を入力、
+    PA 入力 v を目標として、v ≈ Φ(z)·θ を最小二乗で解く。実装が素直で広く使われる。</p>
+  <div class="eq">θ = (ΦᴴΦ + λI)⁻¹ Φᴴ v　（ILA・リッジ最小二乗）<span class="n">(4.1)</span></div>
+  <p><strong>直接学習（Direct Learning, DLA）</strong>は、DPD＋PA の縦続出力の誤差を直接最小化する。
+    PA モデルを介して勾配を計算するため実装は重いが、ノイズ耐性や最適性で有利とされる。</p>
+  <div class="flow">
+    <span class="node">目標 G·x</span><span class="arrow">→(誤差)</span>
+    <span class="node acc">DPD 係数更新</span><span class="arrow">→</span>
+    <span class="node">DPD</span><span class="arrow">→</span>
+    <span class="node">PA</span><span class="arrow">→</span>
+    <span class="node">観測</span><span class="arrow">↺</span>
+  </div>
+
+  <h3>4.2 最小二乗・正則化・条件数</h3>
+  <p>基底行列 Φ の列（高次項・深いタップ）は互いに相関が強く、ΦᴴΦ の<strong>条件数が悪化</strong>しやすい。
+    これは係数の暴れ・過学習・量子化敏感性を招く。対策は、(i) <strong>リッジ正則化</strong>（λI の付加）、
+    (ii) 直交基底（記憶直交多項式）への変換、(iii) 入力の適切な正規化（RMS=1 など）である。
+    実装では λ を ΦᴴΦ のトレースに比例させる相対正則化が扱いやすい。</p>
+
+  <h3>4.3 適応アルゴリズム</h3>
+  <p>温度・電源・経年でPA 特性は変わる。係数を追従させるには、バッチ最小二乗の定期再学習に加え、
+    <strong>RLS（再帰的最小二乗）</strong>や <strong>LMS（最小平均二乗）</strong>による逐次適応、
+    あるいは背景で緩く更新する「バックグラウンド適応」を用いる。収束速度（RLS）と演算量（LMS）の折り合いで選ぶ。</p>
+
+  <h3>4.4 観測受信機と帯域</h3>
+  <p>DPD は PA 出力をカプラで取り出し、ダウンコン→ADC で観測する<strong>フィードバック受信機</strong>を要する。
+    要点は次の通り。</p>
+  <ul>
+    <li><strong>観測帯域</strong>：3〜5 次の再成長まで捉えるため、信号帯域の <strong>3〜5 倍</strong>が目安。
+      狭帯域信号（占有 405 kHz など）なら 1.2〜2 MHz で足りる。</li>
+    <li><strong>時間整合（アライメント）</strong>：DPD 入力と観測の遅延を、分数サンプル精度で合わせる。
+      ここがずれると同定は破綻する。</li>
+    <li><strong>観測系自身の線形性・ダイナミックレンジ</strong>：観測が歪めば逆モデルも歪む。ADC の分解能・
+      IP3 に余裕を持たせる。</li>
+  </ul>
+  <div class="call">
+    <div class="label">第4章 実務への含意</div>
+    <p>DPD が「効かない」時、多くはモデルより<strong>観測系（帯域不足・アライメント・飽和）と数値条件</strong>が原因である。
+      同定前に、観測帯域・遅延整合・正規化・正則化を必ず点検せよ。</p>
+  </div>
+</div>
+
+<!-- ===================== CHAPTER 5 ===================== -->
+<div class="chap">
+  <div class="chap-head">
+    <div class="chap-kicker">Chapter · 論文で調べたこと</div>
+    <div class="chap-num">第 5 章</div>
+    <h2 class="chap-title">主要論文レビュー</h2>
+  </div>
+  <p>DPD の理論的支柱となった古典的論文を、提案・手法・結果・我々への含意の順に整理する。
+    これらは相互に補完的で、合わせて「メモリー効果を含む DPD」の全体像を成す。</p>
+
+  <h3>5.1 メモリ多項式の起源 ― Kim &amp; Konstantinou (2001) / Ding ら (2004)</h3>
+  <div class="call paper"><div class="label">Kim &amp; Konstantinou, Electronics Letters, 2001 ／ L. Ding et al., IEEE T-Commun., 2004</div>
+  <p><strong>提案</strong>：メモリーを持つ PA を、遅延タップ付きの多項式（メモリ多項式）で表す。
+    <strong>手法</strong>：ILA＋最小二乗で係数同定。<strong>結果</strong>：メモリレス比で ACLR を大幅改善し、
+    Volterra より遥かに少ない係数で実用性能を達成。<strong>含意</strong>：MP は今日に至る DPD の実務標準の出発点。
+    まず MP を試すという本書の方針の根拠。</p></div>
+
+  <h3>5.2 メモリー効果を考慮した振る舞いモデル ― Ku &amp; Kenney (2003)</h3>
+  <div class="call paper"><div class="label">H. Ku and J. S. Kenney, IEEE T-MTT, 2003</div>
+  <p><strong>提案</strong>：メモリー効果を含む非線形 PA の behavioral modeling と、
+    その ACPR・IMD 非対称への影響の定式化。<strong>手法</strong>：Volterra/メモリ多項式系の枠組みで、
+    包絡線周波数依存を解析。<strong>結果</strong>：IM3 の非対称がメモリーの直接的証拠であることを示す。
+    <strong>含意</strong>：測定で上下 IM3 の差を見れば、モデルにメモリー項が要るか判定できる。</p></div>
+
+  <h3>5.3 熱メモリー効果 ― Boumaiza &amp; Ghannouchi (2003)</h3>
+  <div class="call paper"><div class="label">S. Boumaiza and F. M. Ghannouchi, IEEE T-MTT, 2003</div>
+  <p><strong>提案</strong>：自己発熱に起因する<strong>熱メモリー</strong>を明示的に扱うモデル化。
+    <strong>手法</strong>：電気的メモリーと熱的メモリーを分離し、温度状態を含めて記述。
+    <strong>結果</strong>：低い包絡線周波数域で熱メモリーが支配的になることを示した。
+    <strong>含意</strong>：<strong>狭帯域ほど熱メモリーが効く</strong>という本書の主張の一次的裏付け。放熱と長時定数補償の必要性。</p></div>
+
+  <h3>5.4 一般化メモリ多項式 ― Morgan ら (2006)</h3>
+  <div class="call paper"><div class="label">D. R. Morgan, Z. Ma, J. Kim, M. G. Zierdt, J. Pastalan, IEEE T-SP, 2006</div>
+  <p><strong>提案</strong>：MP に遅延包絡線との<strong>交差項</strong>を加えた GMP。<strong>手法</strong>：Volterra の実用的縮約として定式化し、
+    ILA で同定。<strong>結果</strong>：強メモリー・広帯域で MP を上回る補正を、Volterra 全項より少ない係数で実現。
+    <strong>含意</strong>：MP で不足する場合の第一の増補が GMP。ただし係数増に見合う改善かを検証すること。</p></div>
+
+  <h3>5.5 メモリー効果の最小化 ― Katz ほか</h3>
+  <div class="call paper"><div class="label">A. Katz, "Linearization / Minimizing PA Memory Effects," IEEE Microwave Magazine ほか</div>
+  <p><strong>提案</strong>：DPD の前に、回路側でメモリー効果そのものを小さくするという視点。
+    <strong>手法</strong>：ビデオ帯域インピーダンス低減、バイアス設計、熱設計、整合の最適化。
+    <strong>結果</strong>：メモリーが小さいほど DPD が良く効く（＝残差が下がる）。
+    <strong>含意</strong>：<strong>「回路で下地、DPD で仕上げ」</strong>という設計順序の根拠。DPD を万能視しない。</p></div>
+
+  <h3>5.6 Volterra 系と低複雑度化 ― Zhu・Pedro・Brazil ほか</h3>
+  <div class="call paper"><div class="label">A. Zhu, J. C. Pedro, T. J. Brazil, "Dynamic Deviation Reduction-based Volterra," IEEE T-MTT, 2006 ほか</div>
+  <p><strong>提案</strong>：Volterra 級数を、動的偏差の次数で刈り込み実用化する体系。
+    <strong>結果</strong>：MP/GMP を含む多くのモデルを統一的に理解でき、必要な項だけを残す指針を与える。
+    <strong>含意</strong>：モデル選択を「勘」でなく「動的偏差の寄与」で行う理論的背骨。</p></div>
+
+  <h3>5.7 間接学習アーキテクチャの起源 ― Eun &amp; Powers (1997)</h3>
+  <div class="call paper"><div class="label">C. Eun and E. J. Powers, IEEE T-SP, 1997</div>
+  <p><strong>提案</strong>：予歪器を後段逆モデルの同定＋コピーで学習する ILA。<strong>含意</strong>：今日の
+    大多数の実装が採る枠組み。第4章の (4.1) はこの系譜にある。</p></div>
+
+  <h3>5.8 総括 ― 文献が示す設計原則</h3>
+  <ol>
+    <li>メモリー効果は無視できず、モデルにメモリー項が要る（Kim/Ding, Ku&amp;Kenney）。</li>
+    <li>熱・トラップの遅いメモリーは狭帯域で顕在化する（Boumaiza, Katz）。</li>
+    <li>まず MP、不足なら GMP、理論的背骨は Volterra の縮約（Morgan, Zhu/Pedro）。</li>
+    <li>回路でメモリーを減らしてから DPD で仕上げる（Katz）。</li>
+    <li>同定枠組みは ILA が標準（Eun&amp;Powers）。</li>
+  </ol>
+</div>
+
+<!-- ===================== CHAPTER 6 ===================== -->
+<div class="chap">
+  <div class="chap-head">
+    <div class="chap-kicker">Chapter · 論文で調べたこと</div>
+    <div class="chap-num">第 6 章</div>
+    <h2 class="chap-title">AI／機械学習による DPD</h2>
+  </div>
+  <p>近年、ニューラルネットワーク（NN）を用いた DPD が活発に研究されている。本章では、
+    なぜ NN か、代表的な構造、学習と汎化、オープン実装、そして長所と限界を整理する。</p>
+
+  <h3>6.1 なぜニューラルネットワークか</h3>
+  <p>MP/GMP は「基底関数を人が決める」線形回帰である。強い非線形や複雑なメモリーでは、
+    適切な基底の設計が難しくなる。NN は<strong>基底そのものをデータから学習</strong>できるため、
+    多項式では捉えにくい特性（強圧縮、ヒステリシス、広帯域の複雑なメモリー）に適合しうる。</p>
+
+  <h3>6.2 代表的な構造</h3>
+  <ul>
+    <li><strong>実数値時間遅延 NN（RVTDNN）</strong>：I/Q を実部・虚部に分け、過去数サンプルを入力にとる MLP。
+      最も基本的で FPGA 化しやすい。</li>
+    <li><strong>拡張／包絡線入力 NN</strong>：|x|, |x|² などの包絡線特徴も入力に加え、収束と汎化を改善。</li>
+    <li><strong>再帰型（RNN/GRU/LSTM）</strong>：長い時定数のメモリー（熱・トラップ）に向くが、推論コスト大。</li>
+    <li><strong>物理埋め込み型</strong>：MP 基底を前処理特徴として与え、NN が残差を学習するハイブリッド。</li>
+  </ul>
+  <p>実務では、<strong>MP 基底の特徴量を入力に用いた小さな MLP</strong>が、少ない演算で安定に学習でき、扱いやすい。</p>
+
+  <h3>6.3 学習と汎化</h3>
+  <p>NN-DPD は過学習・汎化の管理が要点となる。学習信号の PAPR・統計が運用信号と異なると性能が落ちる。
+    正則化、十分な学習データ、運用条件（温度・出力）を跨いだデータでの学習が必要。
+    また NN は初期値・学習率に敏感で、再現性の確保に注意を要する。</p>
+
+  <h3>6.4 オープンな実装とツール</h3>
+  <ul>
+    <li><strong>OpenDPD</strong> をはじめとするオープンソースの DPD/PA モデリング枠組み（PyTorch 等）。
+      モデル比較・ベンチマークの土台になる。</li>
+    <li><strong>Julia / Python（Flux, PyTorch）</strong>：モデル同定・NN 学習のプロトタイピング。
+      線形モデルは <span class="mono">θ = Φ \ y</span> の一行で最小二乗が解ける手軽さがある。</li>
+  </ul>
+
+  <h3>6.5 長所と限界</h3>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>MP / GMP</th><th>NN-DPD</th></tr></thead>
+    <tbody>
+      <tr><td>表現力</td><td>中（基底設計に依存）</td><td>高（基底を学習）</td></tr>
+      <tr><td>係数／演算量</td><td>少〜中、決定的</td><td>多、構造依存</td></tr>
+      <tr><td>学習の安定性</td><td>高（凸・最小二乗）</td><td>中（非凸・要調整）</td></tr>
+      <tr><td>FPGA 実装</td><td>成熟</td><td>発展途上（量子化・スケジューリング）</td></tr>
+      <tr><td>解釈性</td><td>高</td><td>低</td></tr>
+    </tbody>
+  </table></div>
+  <div class="call">
+    <div class="label">第6章 実務への含意</div>
+    <p>NN-DPD は「MP/GMP で頭打ちの、強非線形・広帯域・複雑メモリー」で価値を持つ。狭帯域・
+      中庸な非線形なら、よく整合した MP が<strong>係数・安定性・実装成熟度</strong>で依然有利。適材適所で選ぶ。</p>
+  </div>
+</div>
+
+<!-- ===================== CHAPTER 7 ===================== -->
+<div class="chap">
+  <div class="chap-head">
+    <div class="chap-kicker">Chapter · 製品で調べたやり方</div>
+    <div class="chap-num">第 7 章</div>
+    <h2 class="chap-title">効率向上技術との統合</h2>
+  </div>
+  <p>DPD は線形化技術であり、効率そのものは上げない。実機では効率向上技術（Doherty, ET, EER, LINC）と
+    組み合わせる。本章はそれらの原理と、DPD との協調、そして高周波での適用可否を述べる。</p>
+
+  <h3>7.1 Doherty 増幅器</h3>
+  <p>キャリア増幅器とピーク増幅器を、<strong>90°（1/4 波長）インピーダンス反転器</strong>で結合し、
+    バックオフ域の効率を高める方式。基地局で広く使われる。ただし 1/4 波長線路が必須で、
+    <strong>周波数が高いほど線路が短くなり、公差・損失・寄生の影響が厳しくなる</strong>。
+    6.5 GHz では 1/4 波長が基板上で 3.6〜5.3 mm 程度と小さく、モジュール（箱＋SMA）形態では
+    非効率になりやすい。集中定数 LC や MMIC 集積でのみ現実的である。</p>
+
+  <h3>7.2 エンベロープ・トラッキング（ET）</h3>
+  <p>信号の包絡線に応じて<strong>電源電圧を動的に変える</strong>ことで、常に飽和近傍の高効率点で
+    動かす方式。供給変調器の帯域は信号帯域の 1.5〜3 倍あればよく、<strong>狭帯域ほど実現が容易</strong>。
+    高 PAPR 信号での効率改善が大きく、DPD と併用すると線形性も保てる。
+    6.5 GHz の狭帯域用途では Doherty より現実的な効率手段となりうる。</p>
+
+  <h3>7.3 EER・LINC・アウトフェージング</h3>
+  <ul>
+    <li><strong>EER（Envelope Elimination and Restoration, Kahn 方式）</strong>：位相のみを飽和増幅し、
+      振幅を電源で復元。高効率だが振幅・位相経路の帯域・整合が難しい。</li>
+    <li><strong>LINC／アウトフェージング</strong>：定包絡線 2 信号に分解して飽和増幅し合成。
+      合成器の効率・不整合が課題。</li>
+  </ul>
+
+  <h3>7.4 DPD との協調</h3>
+  <p>効率向上技術は新たな非線形・メモリーを持ち込む（ET なら供給変調の遅延・帯域、Doherty なら
+    負荷変調の非線形）。<strong>DPD はこれらを含めて逆モデル化する</strong>ことで、効率と線形性を両立させる。
+    実務では「ET＋DPD」「Doherty＋DPD」が定番の組み合わせである。</p>
+  <div class="call">
+    <div class="label">第7章 実務への含意</div>
+    <p>高周波・狭帯域では Doherty より <strong>ET＋DPD</strong>、あるいは<strong>深バックオフ＋DPD＋放熱</strong>が現実的。
+      効率要件が緩ければ、バックオフ主体で回路をシンプルに保つのが堅い。</p>
+  </div>
+</div>
+
+<!-- ===================== CHAPTER 8 ===================== -->
+<div class="chap">
+  <div class="chap-head">
+    <div class="chap-kicker">Chapter · 製品で調べたやり方</div>
+    <div class="chap-num">第 8 章</div>
+    <h2 class="chap-title">製品・実装事例</h2>
+  </div>
+  <p>DPD が実際の製品でどう実装されているかを、放送・特機の実機、トランシーバ内蔵 DPD、
+    FPGA/RFSoC、測定器、設計ツールの順に俯瞰する。<strong>個別の型番・数値は公開情報に基づく概観であり、
+    設計確定前には各社の一次資料（データシート・技報）で裏取りすること。</strong></p>
+
+  <h3>8.1 全体像 ― 実装形態の三分類</h3>
+  <div class="tw"><table>
+    <thead><tr><th>形態</th><th>内容</th><th>向く用途</th></tr></thead>
+    <tbody>
+      <tr><td>専用 IC 内蔵（トランシーバ SoC）</td><td>DPD/CFR を送受信 IC に統合</td><td>基地局・大量生産、標準波形</td></tr>
+      <tr><td>FPGA / RFSoC の DFE</td><td>ディジタル・フロントエンドとして DPD をハード化 or ソフト実装</td><td>柔軟な波形・研究開発・特機</td></tr>
+      <tr><td>ソフト DPD（DSP/汎用）</td><td>低速・狭帯域でソフト処理</td><td>狭帯域・低レート（放送 STL など）</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>8.2 放送・特機の実機 ― 三菱電機特機システム MESW 技報</h3>
+  <p>放送・特機分野の実例として、三菱電機特機システムの DPD 増幅器開発（400 MHz 帯・256QAM）が
+    技報に報告されている。要点は次の通り。</p>
+  <ul>
+    <li><strong>方式</strong>：間接学習（ILA）＋最小二乗を Simulink で設計し、FPGA へ実装。</li>
+    <li><strong>成果</strong>：ACP（隣接チャネル電力）で <strong>−57.1 dB</strong> 級を達成。</li>
+    <li><strong>決定的な知見</strong>：AM/AM・AM/PM がほぼ同一の 2 台でも、<strong>バイアス回路を変えただけで
+      DPD 後 ACP が約 10 dB 変化</strong>した。静的特性が同じでもメモリー効果で DPD の効きが変わる、
+      という本書第2章の主張の実測証拠である。</li>
+  </ul>
+  <div class="call crit"><div class="label">この事例が示すこと</div>
+    <p>製品レベルでも「モデルより先にメモリーを作らない回路」が効く。DPD 開発は
+      アルゴリズムと回路・実装が不可分であることを、実機データが裏づけている。</p></div>
+
+  <h3>8.3 トランシーバ内蔵 DPD（商用 SoC）</h3>
+  <p>基地局向けの広帯域 RF トランシーバには、<strong>DPD と CFR（クレストファクタ低減）を内蔵</strong>した
+    製品群がある。代表例として、アナログ・デバイセズ（ADI）の RadioVerse 系トランシーバ
+    （ADRV9025／ADRV9040 など）は、複数バンド・広帯域の DPD をチップ内デジタル・フロントエンドで
+    処理する構成を採る。これらは「モデル・観測・適応」を IC 内で完結させ、外部演算を減らす思想である。
+    <em>（型番・対応帯域・性能は世代で異なるため、採用時は最新データシートで確認のこと。）</em></p>
+
+  <h3>8.4 FPGA / RFSoC のディジタル・フロントエンド</h3>
+  <p>研究開発・特機・柔軟な波形には、FPGA や <strong>RFSoC</strong>（RF データ変換器を内蔵した SoC。
+    AMD/Xilinx の Zynq UltraScale+ RFSoC など）が用いられる。近年はディジタル・フロントエンド（DFE）に
+    <strong>DPD をハード化した専用ブロック</strong>を持つ品種もあり、MP/GMP 相当の処理を高スループットで実行する。
+    自社アルゴリズム（独自モデル・NN-DPD）を載せる自由度が高い点が特機・放送に向く。</p>
+
+  <h3>8.5 測定器 ― DPD 評価と PA モデリング</h3>
+  <p>DPD の評価・PA モデル抽出は測定器側にも機能がある。</p>
+  <ul>
+    <li><strong>ベクトル信号発生器＋シグナルアナライザ</strong>：変調波を送り、EVM・ACLR・スペクトルマスクを測定。
+      スペクトルマスクの合否は<strong>スペアナのパワー測定だけで判定でき、I/Q の取り出しは不要</strong>。</li>
+    <li><strong>増幅器測定オプション</strong>：市販アナライザには、AM/AM・AM/PM 抽出、メモリ多項式モデル同定、
+      DPD 係数計算までを備えたオプション（例：R&amp;S FSW-K18 増幅器測定など）がある。</li>
+    <li><strong>用途</strong>：静的特性（AM/AM・AM/PM）の実測 → 代表モデルの差し替え → DPD 前後の比較。</li>
+  </ul>
+
+  <h3>8.6 設計・モデリングツール</h3>
+  <ul>
+    <li><strong>MATLAB/Simulink（Communications Toolbox, RF Blockset）</strong>：メモリ多項式 DPD ブロック、
+      ILA、HDL Coder による FPGA 化まで一貫。</li>
+    <li><strong>Julia / Python</strong>：モデル同定（最小二乗 <span class="mono">θ=Φ\y</span>）、NN-DPD のプロトタイピング。</li>
+    <li><strong>回路シミュレータ（Harmonic Balance / X-parameters）</strong>：デバイス非線形の物理検証。</li>
+  </ul>
+  <div class="call">
+    <div class="label">第8章 実務への含意</div>
+    <p>「どこで DPD を回すか」は用途で決まる。大量生産・標準波形は<strong>トランシーバ内蔵</strong>、
+      特機・放送・研究は<strong>FPGA/RFSoC ＋ 自社アルゴリズム</strong>、狭帯域低レートは<strong>ソフト DPD</strong>。
+      いずれも評価は測定器のマスク測定で完結でき、I/Q が取れなくても設計・検証は進められる。</p>
+  </div>
+</div>
+
+<!-- ===================== CHAPTER 9 ===================== -->
+<div class="chap">
+  <div class="chap-head">
+    <div class="chap-kicker">Chapter · 製品で調べたやり方</div>
+    <div class="chap-num">第 9 章</div>
+    <h2 class="chap-title">実装の実務</h2>
+  </div>
+  <p>理論と製品の知見を、実装に落とすための実務指針をまとめる。</p>
+
+  <h3>9.1 モデル次数・メモリー深さの選定</h3>
+  <p>次数 K・深さ M は大きいほど表現力が上がるが、係数・演算・過学習・数値条件が悪化する。
+    実務の手順は、(1) メモリレスから始め、(2) 深さを 1 ずつ増やし NMSE の飽和点を探し、
+    (3) 次数も同様に増やし、(4) ACLR/マスクを満たす最小の (K,M) を採る。
+    多くの PA で <strong>K=5〜7、M=3〜5</strong> が実用的な出発点である。</p>
+
+  <h3>9.2 数値条件 ― 正規化と正則化</h3>
+  <p>入力の RMS を 1 に正規化し、基底行列の条件数を監視する。条件数が大きい時はリッジ正則化
+    （λ を ΦᴴΦ のトレースに比例）か直交基底を使う。係数の絶対値が異常に大きい／振動する場合は
+    過学習・条件数悪化のサインである。</p>
+
+  <h3>9.3 量子化と固定小数点</h3>
+  <p>FPGA 実装では係数・信号を固定小数点に量子化する。過度な量子化は補正精度を落とす。
+    係数のダイナミックレンジ、乗算器のビット幅、丸め方式を、目標 ACLR から逆算して決める。
+    LUT 方式なら分解能と補間、多項式方式なら Horner 展開の語長に注意する。</p>
+
+  <h3>9.4 レイテンシと同期</h3>
+  <p>DPD は信号経路に遅延を加える。適応ループでは観測との時間整合（分数サンプル）を保つ必要がある。
+    高速インターフェース（JESD204B 等）では確定的レイテンシの管理が重要になる。</p>
+
+  <h3>9.5 検証フロー</h3>
+  <ol>
+    <li><strong>静特性取得</strong>：実機 PA の AM/AM・AM/PM を測定し、代表モデルを差し替える。</li>
+    <li><strong>DPD OFF で基準測定</strong>：EVM・ACLR・スペクトルマスクの余裕を確認（<strong>I/Q 不要、スペアナで可</strong>）。</li>
+    <li><strong>モデル同定</strong>：MP（K,M）を ILA＋最小二乗で同定、条件数・係数を点検。</li>
+    <li><strong>DPD ON で再測</strong>：改善量（ACLR/マスク／EVM／NMSE）を定量化。不足なら GMP、さらに NN。</li>
+    <li><strong>環境変動での確認</strong>：温度・出力・周波数を振り、適応の追従を確認。</li>
+  </ol>
+  <div class="call">
+    <div class="label">第9章 実務への含意</div>
+    <p>「一度で完璧なモデル」を狙わず、<strong>最小モデルから飽和点を探る</strong>。検証は必ず
+      DPD OFF/ON の対比で行い、改善量を数値で残す。I/Q が取れない現場でも、マスク測定主体で設計は前進できる。</p>
+  </div>
+</div>
+
+<!-- ===================== CHAPTER 10 ===================== -->
+<div class="chap">
+  <div class="chap-head">
+    <div class="chap-kicker">Chapter · ケーススタディ</div>
+    <div class="chap-num">第 10 章</div>
+    <h2 class="chap-title">6.5 GHz M バンド GaN の実例</h2>
+  </div>
+  <p>本書の理論と実務を、我々自身のプロジェクト――放送 M バンド D-STL 送信増幅器の GaAs→GaN 置換
+    ――に適用した実例で締めくくる。</p>
+
+  <h3>10.1 要求と背景</h3>
+  <p>原設計（2020, FM 福井向け MN-band D-STL）の PA は GaAs で、その GaAs が廃番（EOL）となった。
+    これを現行 C 帯 GaN で作り直す。維持すべき条件は 64QAM・α=0.2・R<sub>s</sub>=374.4 ksps・
+    占有 ≤405 kHz・実マスク −37 dBc@±250 kHz / −48 dBc@±750 kHz・送信 6716.625 MHz。出力目標は仕様値 2 W（+33 dBm）。</p>
+
+  <h3>10.2 メモリー効果の実証（シミュレーション）</h3>
+  <p>メモリあり GaN PA モデルに対し DPD 方式を比較した。メモリレス DPD では EVM が 7.5% で頭打ちになり、
+    メモリ項を入れた MP で 2.0% まで改善――<strong>DPD にメモリー項が必須であること</strong>を数値で確認した。</p>
+  <div class="tw"><table>
+    <thead><tr><th>条件</th><th class="num">EVM</th><th class="num">ACLR</th></tr></thead>
+    <tbody>
+      <tr><td>DPD なし</td><td class="num">9.70 %</td><td class="num">33.1 dB</td></tr>
+      <tr><td>メモリレス DPD</td><td class="num">7.49 %</td><td class="num">36.3 dB</td></tr>
+      <tr class="best"><td><strong>MP DPD 7 次/深さ 5</strong></td><td class="num">2.04 %</td><td class="num">40.3 dB</td></tr>
+      <tr><td>GMP（交差項）</td><td class="num">2.01 %</td><td class="num">40.6 dB</td></tr>
+    </tbody>
+  </table></div>
+  <p>Julia（1.12.7）による追加同定でも、MP は 24 係数で NMSE −34.7 dB、GMP は +18 係数で改善わずか 0.03 dB。
+    <strong>本件では MP 7 次/深さ 5 が第一候補</strong>と結論した（第3・5章の原則どおり）。</p>
+
+  <h3>10.3 バックオフ vs 実マスク</h3>
+  <p>実条件（2W・64QAM・α0.2・実マスク）で出力バックオフ（OBO）を掃引し、マスク合格点を予測した。
+    支配するのは常に ±250 kHz の近接肩であった。</p>
+  <div class="tw"><table>
+    <thead><tr><th>運用</th><th class="num">±250 kHz</th><th class="num">±750 kHz</th><th>判定</th></tr></thead>
+    <tbody>
+      <tr class="best"><td>25W 品・DPD 無し（OBO 11 dB）</td><td class="num">−40.2 dB</td><td class="num">−71.7 dB</td><td>合格</td></tr>
+      <tr><td>10W 品・DPD 無し（OBO 7.7 dB）</td><td class="num">−34.0 dB</td><td class="num">−67.4 dB</td><td>3dB 不足</td></tr>
+      <tr class="best"><td>10W 品・MP-DPD（OBO 7.7 dB）</td><td class="num">−41.6 dB</td><td class="num">−64.3 dB</td><td>合格</td></tr>
+    </tbody>
+  </table></div>
+  <p>DPD 無しなら OBO 10〜11 dB が必要（25W 品でクリア）。10W 品は MP-DPD で ±250 kHz を +7.6 dB 改善し、
+    2 W でマスク合格圏に入る。<strong>この予測はスペアナのマスク測定で確定でき、I/Q は不要</strong>である
+    （第8・9章の方針の実践）。</p>
+
+  <h3>10.4 デバイス選定と結論</h3>
+  <p>尖頭 ~9 W を Psat より数 dB 下に収める観点から、<strong>25 W 級 GaN MMIC（例：Wolfspeed CMPA601C025F）を本命</strong>、
+    小型化重視なら <strong>10 W 級（例：Qorvo QPA1013D）＋MP-DPD</strong> とした。いずれも MMIC で実装を楽にする一方、
+    <strong>バイアス給電（電気的メモリー）と放熱（熱メモリー）は自前で作り込む</strong>――第2・5章の教訓そのものである。</p>
+  <div class="call">
+    <div class="label">第10章 実務への含意</div>
+    <p>本ケースは、本書の原則が一貫して働くことを示す：メモリー項の要否は数値で判定、モデルは効く最小（MP）を選ぶ、
+      効率は割り切って深バックオフ＋放熱、検証はマスク測定で I/Q 不要。理論・文献・製品知見が一つの設計に結実する。</p>
+  </div>
+</div>
+
+<!-- ===================== CHAPTER 11 ===================== -->
+<div class="chap">
+  <div class="chap-head">
+    <div class="chap-kicker">Chapter</div>
+    <div class="chap-num">第 11 章</div>
+    <h2 class="chap-title">まとめと今後の展望</h2>
+  </div>
+  <p>本書は DPD を、原理・論文・製品の三方向から一望した。要点を再掲する。</p>
+  <ol>
+    <li><strong>DPD は効率と線形性の矛盾を解く。</strong>浅いバックオフでもマスク・EVM を満たすのが狙い。</li>
+    <li><strong>難所はメモリー効果。</strong>電気的（速い）／トラップ・熱（遅い）に分かれ、狭帯域では後者が効く。</li>
+    <li><strong>モデルは MP を基本に、不足なら GMP、強非線形・広帯域なら NN。</strong>効く最小を選ぶ。</li>
+    <li><strong>同定は ILA＋最小二乗が標準。</strong>観測系（帯域・アライメント）と数値条件が成否を分ける。</li>
+    <li><strong>回路で下地、DPD で仕上げ。</strong>バイアス・放熱・デバイス選定が DPD の効きを左右する（実機で 10 dB 差）。</li>
+    <li><strong>製品はトランシーバ内蔵／FPGA・RFSoC／ソフトの三形態。</strong>用途で選ぶ。評価はマスク測定で I/Q 不要。</li>
+  </ol>
+  <p>今後は、(i) NN-DPD の FPGA 実装成熟（量子化・スケジューリング）、(ii) 広帯域・多バンド DPD、
+    (iii) ET/Doherty との統合最適化、(iv) デジタル・フロントエンドのハード化、が進むと見込まれる。
+    もっとも、どれだけモデルが進化しても、<strong>「メモリーを作らない回路・熱・デバイス」という下地の重要性は変わらない</strong>。
+    これが、本書を通じて一貫して示した最も実務的な結論である。</p>
+
+  <!-- Appendix A -->
+  <h3>付録 A ― 記号・用語</h3>
+  <div class="tw"><table>
+    <thead><tr><th>記号／用語</th><th>意味</th></tr></thead>
+    <tbody>
+      <tr><td>AM/AM, AM/PM</td><td>入力振幅に対する利得圧縮／位相回転</td></tr>
+      <tr><td>PAPR</td><td>ピーク対平均電力比</td></tr>
+      <tr><td>OBO</td><td>出力バックオフ（飽和からの後退量）</td></tr>
+      <tr><td>EVM</td><td>誤差ベクトル振幅（帯域内歪みの総和）</td></tr>
+      <tr><td>ACLR / ACPR</td><td>隣接チャネル漏洩電力比</td></tr>
+      <tr><td>MP / GMP</td><td>メモリ多項式／一般化メモリ多項式</td></tr>
+      <tr><td>ILA / DLA</td><td>間接学習／直接学習アーキテクチャ</td></tr>
+      <tr><td>NMSE</td><td>正規化平均二乗誤差（モデル適合度）</td></tr>
+      <tr><td>ET / EER / LINC</td><td>エンベロープトラッキング／包絡線消去復元／線形化のための非線形部品合成</td></tr>
+      <tr><td>DFE</td><td>ディジタル・フロントエンド</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- Appendix B -->
+  <h3>付録 B ― 数式まとめ</h3>
+  <div class="eq">メモリ多項式：y[n] = Σ<sub>m=0</sub><sup>M</sup> Σ<sub>k∈{1,3,5,…}</sub><sup>K</sup> a<sub>k,m</sub> x[n−m] |x[n−m]|<sup>k−1</sup></div>
+  <div class="eq">ILA 最小二乗：θ = (ΦᴴΦ + λI)⁻¹ Φᴴ v</div>
+  <div class="eq">EVM = √( Σ|ŝ−s|² / Σ|s|² ) ×100 [%]</div>
+  <div class="eq">NMSE = 10·log₁₀( Σ|y−ŷ|² / Σ|y|² ) [dB]</div>
+  <div class="eq">係数数(MP) ≈ ⌈K/2⌉ × (M+1)　（例 K=7,M=5 → 4×6 = 24）</div>
+
+  <!-- References -->
+  <h3>参考文献</h3>
+  <ol class="refs">
+    <li>J. Kim and K. Konstantinou, "Digital predistortion of wideband signals based on power amplifier model with memory," <em>Electronics Letters</em>, 2001.</li>
+    <li>L. Ding, G. T. Zhou, D. R. Morgan, Z. Ma, J. S. Kenney, J. Kim, C. R. Giardina, "A robust digital baseband predistorter constructed using memory polynomials," <em>IEEE Trans. Communications</em>, 2004.</li>
+    <li>D. R. Morgan, Z. Ma, J. Kim, M. G. Zierdt, J. Pastalan, "A generalized memory polynomial model for digital predistortion of RF power amplifiers," <em>IEEE Trans. Signal Processing</em>, vol. 54, 2006.</li>
+    <li>H. Ku and J. S. Kenney, "Behavioral modeling of nonlinear RF power amplifiers considering memory effects," <em>IEEE Trans. Microwave Theory Tech.</em>, 2003.</li>
+    <li>S. Boumaiza and F. M. Ghannouchi, "Thermal memory effects modeling and compensation in RF power amplifiers," <em>IEEE Trans. Microwave Theory Tech.</em>, 2003.</li>
+    <li>A. Katz, "Linearization: reducing distortion in power amplifiers," <em>IEEE Microwave Magazine</em>, 2001（およびメモリー効果最小化に関する一連の報告）.</li>
+    <li>A. Zhu, J. C. Pedro, T. J. Brazil, "Dynamic deviation reduction-based Volterra behavioral modeling of RF power amplifiers," <em>IEEE Trans. Microwave Theory Tech.</em>, 2006.</li>
+    <li>C. Eun and E. J. Powers, "A new Volterra predistorter based on the indirect learning architecture," <em>IEEE Trans. Signal Processing</em>, 1997.</li>
+    <li>三菱電機特機システム, MMS 技報「DPD を用いた広帯域低歪増幅器」（400 MHz/256QAM, ILA, Simulink→FPGA, ACP −57.1 dB）.</li>
+    <li>OpenDPD ほか オープンソース DPD/PA モデリング実装（PyTorch 系）.</li>
+    <li>Analog Devices, RadioVerse トランシーバ（ADRV9025/ADRV9040 系）製品資料（DPD/CFR 内蔵）.</li>
+    <li>AMD/Xilinx, Zynq UltraScale+ RFSoC / DFE 製品資料（DPD ブロック）.</li>
+    <li>Rohde &amp; Schwarz, FSW-K18 増幅器測定（AM/AM・AM/PM・DPD モデリング）ほか測定器資料.</li>
+    <li>MathWorks, Communications Toolbox / RF Blockset（メモリ多項式 DPD, ILA, HDL Coder）.</li>
+  </ol>
+  <p style="font-size:.82rem;color:var(--muted);margin-top:10px">
+    ※ 製品・型番・数値は執筆時点の公開情報に基づく概観であり、世代・仕様変更がありうる。
+    設計確定前に各社の一次資料（データシート・技報・規格書）で必ず裏取りすること。</p>
+</div>
+
+<hr>
+<div class="foot">
+  <span>デジタル・プリディストーション技術書 · 第1版</span>
+  <span class="mono">RF デザイン株式会社 · fmmisty/test</span>
+</div>
+
+</div>
