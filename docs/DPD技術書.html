@@ -541,6 +541,45 @@
     ほかに、線形フィルタと静的非線形を縦続にした<strong>Wiener（LN）／Hammerstein（NL）</strong>、
     両者を挟む<strong>Wiener–Hammerstein</strong> といったブロック構造モデルがあり、
     物理的解釈がしやすい反面、表現力は構造に縛られる。</p>
+  <h3>3.6 動的偏差低減とモデルの刈り込み</h3>
+  <p>Volterra 級数は完全だが係数が爆発する。実用化の鍵は<strong>「動的偏差低減（DDR）」</strong>――
+    出力を「静的非線形＋その周りの動的ずれ」に分け、<strong>動的ずれの次数が低い項だけを残す</strong>考え方である。
+    MP は「同一時刻の対角項」、GMP は「近接遅延の交差項」を残した縮約とみなせ、DDR はこれらを統一的に位置づける。</p>
+  <div class="eq">y[n] = f₀(|x[n]|)·x[n] + Σ<sub>j≥1</sub>（j 次動的偏差項）　← 高次の動的項ほど寄与小 → 刈り込む</div>
+  <p>ブロック構造モデルは、この分解を物理的に具体化したものである。図 3.2 に代表的な三種を示す。</p>
+  <figure>
+    <svg class="diagram" viewBox="0 0 640 210" role="img" aria-label="ブロック構造モデルの図。Wienerは線形フィルタの後に静的非線形、Hammersteinはその逆、Wiener-Hammersteinは非線形を二つの線形フィルタで挟む。">
+      <defs><marker id="a3b" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--line-strong)"/></marker></defs>
+      <g font-family="IBM Plex Sans">
+        <text x="20" y="30" font-size="11.5" font-weight="600" fill="var(--accent-ink)">Wiener（LN）</text>
+        <rect x="60" y="40" width="70" height="30" rx="6" fill="var(--panel)" stroke="var(--line-strong)"/><text x="95" y="60" text-anchor="middle" font-size="10.5" fill="var(--ink)">線形 H(z)</text>
+        <rect x="160" y="40" width="70" height="30" rx="6" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="195" y="60" text-anchor="middle" font-size="10.5" fill="var(--accent-ink)">静的非線形</text>
+        <line x1="30" y1="55" x2="58" y2="55" stroke="var(--line-strong)" stroke-width="1.3" marker-end="url(#a3b)"/>
+        <line x1="130" y1="55" x2="158" y2="55" stroke="var(--line-strong)" stroke-width="1.3" marker-end="url(#a3b)"/>
+        <line x1="230" y1="55" x2="258" y2="55" stroke="var(--line-strong)" stroke-width="1.3" marker-end="url(#a3b)"/>
+
+        <text x="20" y="110" font-size="11.5" font-weight="600" fill="var(--accent-ink)">Hammerstein（NL）</text>
+        <rect x="60" y="120" width="70" height="30" rx="6" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="95" y="140" text-anchor="middle" font-size="10.5" fill="var(--accent-ink)">静的非線形</text>
+        <rect x="160" y="120" width="70" height="30" rx="6" fill="var(--panel)" stroke="var(--line-strong)"/><text x="195" y="140" text-anchor="middle" font-size="10.5" fill="var(--ink)">線形 H(z)</text>
+        <line x1="30" y1="135" x2="58" y2="135" stroke="var(--line-strong)" stroke-width="1.3" marker-end="url(#a3b)"/>
+        <line x1="130" y1="135" x2="158" y2="135" stroke="var(--line-strong)" stroke-width="1.3" marker-end="url(#a3b)"/>
+        <line x1="230" y1="135" x2="258" y2="135" stroke="var(--line-strong)" stroke-width="1.3" marker-end="url(#a3b)"/>
+
+        <text x="330" y="30" font-size="11.5" font-weight="600" fill="var(--accent-ink)">Wiener–Hammerstein（LNL）</text>
+        <rect x="352" y="78" width="66" height="30" rx="6" fill="var(--panel)" stroke="var(--line-strong)"/><text x="385" y="98" text-anchor="middle" font-size="10" fill="var(--ink)">線形 H₁</text>
+        <rect x="438" y="78" width="70" height="30" rx="6" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="473" y="98" text-anchor="middle" font-size="10" fill="var(--accent-ink)">静的非線形</text>
+        <rect x="528" y="78" width="66" height="30" rx="6" fill="var(--panel)" stroke="var(--line-strong)"/><text x="561" y="98" text-anchor="middle" font-size="10" fill="var(--ink)">線形 H₂</text>
+        <line x1="322" y1="93" x2="350" y2="93" stroke="var(--line-strong)" stroke-width="1.3" marker-end="url(#a3b)"/>
+        <line x1="418" y1="93" x2="436" y2="93" stroke="var(--line-strong)" stroke-width="1.3" marker-end="url(#a3b)"/>
+        <line x1="508" y1="93" x2="526" y2="93" stroke="var(--line-strong)" stroke-width="1.3" marker-end="url(#a3b)"/>
+        <line x1="594" y1="93" x2="620" y2="93" stroke="var(--line-strong)" stroke-width="1.3" marker-end="url(#a3b)"/>
+        <text x="470" y="140" text-anchor="middle" font-size="10" fill="var(--muted)">非線形を二つの線形フィルタで挟む</text>
+      </g>
+    </svg>
+    <figcaption class="fig"><b>図 3.2　ブロック構造モデル。</b>Wiener（線形→非線形）、Hammerstein（非線形→線形）、
+      Wiener–Hammerstein（線形→非線形→線形）。物理的解釈がしやすい反面、表現力は構造に縛られる。</figcaption>
+  </figure>
+
   <div class="call">
     <div class="label">第3章 実務への含意</div>
     <p>まず MP（7 次・深さ 5 前後）から始め、ACLR/マスクが足りない時だけ GMP の交差項を足す。
