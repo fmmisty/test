@@ -198,21 +198,21 @@
     <div class="c"><span class="cn">3</span><span>DPD の基礎理論</span></div>
     <div class="s"><span>3.1 逆関数としての予歪　3.2 メモリレス多項式　3.3 メモリ多項式(MP)　3.4 一般化メモリ多項式(GMP)　3.5 Volterra とブロック構造</span></div>
     <div class="c"><span class="cn">4</span><span>係数同定と適応</span></div>
-    <div class="s"><span>4.1 直接学習と間接学習　4.2 最小二乗・正則化・条件数　4.3 適応アルゴリズム　4.4 観測受信機と帯域</span></div>
+    <div class="s"><span>4.1 直接学習と間接学習　4.2 最小二乗・正則化・条件数　4.3 適応アルゴリズム　4.4 観測受信機と帯域　4.5 逐次適応の数式</span></div>
     <div class="c"><span class="cn">5</span><span>主要論文レビュー ― 論文で調べたこと</span></div>
-    <div class="s"><span>5.1 MP の起源　5.2 Ku&amp;Kenney　5.3 Boumaiza 熱メモリー　5.4 Morgan GMP　5.5 Katz　5.6 Volterra 系　5.7 ILA の起源　5.8 総括</span></div>
+    <div class="s"><span>5.1 MP の起源　5.2 Ku&amp;Kenney　5.3 Boumaiza 熱メモリー　5.4 Morgan GMP　5.5 Katz　5.6 Volterra 系　5.7 ILA の起源　5.8 総括　5.9 モデル比較表</span></div>
     <div class="c"><span class="cn">6</span><span>AI／機械学習による DPD</span></div>
     <div class="s"><span>6.1 なぜ NN か　6.2 代表的構造　6.3 学習と汎化　6.4 オープン実装　6.5 長所と限界</span></div>
     <div class="c"><span class="cn">7</span><span>効率向上技術との統合</span></div>
-    <div class="s"><span>7.1 Doherty　7.2 エンベロープ・トラッキング　7.3 EER/LINC　7.4 DPD との協調</span></div>
+    <div class="s"><span>7.1 Doherty　7.2 エンベロープ・トラッキング　7.3 EER/LINC　7.4 DPD との協調　7.5 ET/DPD 統合設計</span></div>
     <div class="c"><span class="cn">8</span><span>製品・実装事例 ― 製品で調べたやり方</span></div>
-    <div class="s"><span>8.1 全体像　8.2 放送・特機の実機　8.3 トランシーバ内蔵 DPD　8.4 FPGA/RFSoC　8.5 測定器　8.6 設計ツール</span></div>
+    <div class="s"><span>8.1 全体像　8.2 放送・特機の実機　8.3 トランシーバ内蔵 DPD　8.4 FPGA/RFSoC　8.5 測定器　8.6 設計ツール　8.7 CFR との協調　8.8 プラットフォーム比較</span></div>
     <div class="c"><span class="cn">9</span><span>実装の実務</span></div>
-    <div class="s"><span>9.1 次数・深さの選定　9.2 数値条件　9.3 量子化　9.4 レイテンシと同期　9.5 検証フロー</span></div>
+    <div class="s"><span>9.1 次数・深さの選定　9.2 数値条件　9.3 量子化　9.4 レイテンシと同期　9.5 検証フロー　9.6 数値例</span></div>
     <div class="c"><span class="cn">10</span><span>ケーススタディ：6.5 GHz M バンド GaN</span></div>
     <div class="s"><span>10.1 要求　10.2 メモリー実証　10.3 DPD 効果　10.4 バックオフ vs マスク　10.5 デバイス選定</span></div>
     <div class="c"><span class="cn">11</span><span>まとめと今後の展望</span></div>
-    <div class="s"><span>付録A 記号・用語　付録B 数式まとめ　参考文献</span></div>
+    <div class="s"><span>付録A 記号・用語　付録B 数式まとめ　付録C 実装チェックリスト　付録D トラブルシューティング　参考文献</span></div>
   </div>
 </section>
 
@@ -672,6 +672,15 @@
     <li><strong>観測系自身の線形性・ダイナミックレンジ</strong>：観測が歪めば逆モデルも歪む。ADC の分解能・
       IP3 に余裕を持たせる。</li>
   </ul>
+  <h3>4.5 逐次適応の数式（RLS / LMS）</h3>
+  <p>バッチ最小二乗を毎回解く代わりに、新しい観測が来るたびに係数 θ を少しずつ更新するのが逐次適応である。
+    代表は次の二つ。</p>
+  <div class="eq">LMS：θ[n+1] = θ[n] + µ · φ[n]* · e[n]　（e[n]=目標−推定, µ=ステップ）</div>
+  <div class="eq">RLS：k[n]=P[n−1]φ[n] / (λ+φ[n]ᴴP[n−1]φ[n]);　θ[n]=θ[n−1]+k[n]e[n];　P[n]=(P[n−1]−k[n]φ[n]ᴴP[n−1])/λ</div>
+  <p>LMS は演算が軽い（1 タップ当たり数乗算）が収束が遅く、ステップ µ の調整が要る。
+    RLS は収束が速く忘却係数 λ（0.98〜0.999 程度）で追従性を制御できるが、共分散行列 P の更新に演算量を要する。
+    実装では、<strong>立ち上げはバッチ最小二乗、運用中の緩やかなドリフト追従は LMS/RLS の背景適応</strong>、という併用が扱いやすい。</p>
+
   <div class="call">
     <div class="label">第4章 実務への含意</div>
     <p>DPD が「効かない」時、多くはモデルより<strong>観測系（帯域不足・アライメント・飽和）と数値条件</strong>が原因である。
@@ -776,6 +785,21 @@
     <li>回路でメモリーを減らしてから DPD で仕上げる（Katz）。</li>
     <li>同定枠組みは ILA が標準（Eun&amp;Powers）。</li>
   </ol>
+
+  <h3>5.9 モデル比較の早見表</h3>
+  <p>本章で扱ったモデルを、表現力・係数数・実装成熟度で一覧にする。設計時の選択指針として用いる。</p>
+  <div class="tw"><table>
+    <thead><tr><th>モデル</th><th>メモリー</th><th>係数数</th><th>表現力</th><th>使いどころ</th></tr></thead>
+    <tbody>
+      <tr><td>メモリレス多項式 / LUT</td><td>×</td><td>最少</td><td>低</td><td>メモリー無視できる狭帯域・弱非線形</td></tr>
+      <tr class="best"><td><strong>メモリ多項式 (MP)</strong></td><td>○（対角）</td><td>少〜中</td><td>中</td><td><strong>実務の第一選択</strong></td></tr>
+      <tr><td>一般化メモリ多項式 (GMP)</td><td>◎（交差項）</td><td>中</td><td>中〜高</td><td>MP 不足時（強メモリー・広帯域）</td></tr>
+      <tr><td>Volterra（DDR 縮約）</td><td>◎</td><td>多</td><td>高</td><td>理論背骨・項の刈り込み指針</td></tr>
+      <tr><td>Wiener / Hammerstein</td><td>○</td><td>少</td><td>構造依存</td><td>物理解釈・簡易モデル</td></tr>
+      <tr><td>ニューラルネット (NN)</td><td>◎</td><td>多</td><td>最高</td><td>強非線形・広帯域・複雑メモリー</td></tr>
+    </tbody>
+  </table></div>
+  <p>原則は<strong>「効く最小のモデル」</strong>。MP から始め、ACLR/マスク不足の時だけ GMP、さらに攻めるなら NN へ、係数増を検証しながら段階的に上げる。</p>
 </div>
 
 <!-- ===================== CHAPTER 6 ===================== -->
@@ -971,6 +995,53 @@
   <p>効率向上技術は新たな非線形・メモリーを持ち込む（ET なら供給変調の遅延・帯域、Doherty なら
     負荷変調の非線形）。<strong>DPD はこれらを含めて逆モデル化する</strong>ことで、効率と線形性を両立させる。
     実務では「ET＋DPD」「Doherty＋DPD」が定番の組み合わせである。</p>
+  <h3>7.5 ET と DPD の統合設計</h3>
+  <p>ET を使うと、PA の非線形性は<strong>入力振幅と供給電圧の両方に依存</strong>するようになる。したがって
+    ET 併用時の DPD は、単なる 1 次元（振幅）ではなく、<strong>振幅×供給電圧の 2 次元特性</strong>を逆補正する必要がある。
+    統合設計の要点は次の三つ。</p>
+  <ul>
+    <li><strong>整形関数（shaping / iso-gain）</strong>：包絡線 |x| から供給電圧 V<sub>dd</sub> への写像を、
+      効率と利得平坦性のバランスで設計する。急峻にすれば効率↑だが線形性が難しくなる。</li>
+    <li><strong>2 次元 DPD</strong>：DPD 係数を供給電圧（または包絡線）でも索引し、動作点ごとの逆特性を与える。</li>
+    <li><strong>経路間タイミング整合</strong>：RF 経路と供給変調経路の遅延をサンプル精度で合わせる。ずれると
+      かえって歪みが増える。ET-DPD で最も嵌りやすい落とし穴。</li>
+  </ul>
+  <figure>
+    <svg class="diagram" viewBox="0 0 640 220" role="img" aria-label="ET-DPD統合の図。RF経路は2次元DPDを通りPAへ、包絡線経路は整形関数と供給変調器を通りPAの電源へ。両経路のタイミングを合わせる。">
+      <defs><marker id="a75" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--line-strong)"/></marker>
+      <marker id="a75a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"/></marker></defs>
+      <rect x="150" y="40" width="120" height="38" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="210" y="64" text-anchor="middle" font-size="11.5" fill="var(--accent-ink)">2次元 DPD</text>
+      <rect x="330" y="40" width="86" height="38" rx="8" fill="var(--panel)" stroke="var(--line-strong)"/>
+      <text x="373" y="64" text-anchor="middle" font-size="12" fill="var(--ink)">PA</text>
+      <g stroke="var(--line-strong)" stroke-width="1.4" fill="none">
+        <line x1="44" y1="59" x2="148" y2="59" marker-end="url(#a75)"/>
+        <line x1="270" y1="59" x2="328" y2="59" marker-end="url(#a75)"/>
+        <line x1="416" y1="59" x2="470" y2="59" marker-end="url(#a75)"/>
+      </g>
+      <text x="40" y="52" text-anchor="end" font-size="11" fill="var(--muted)">x[n]</text>
+      <text x="452" y="52" text-anchor="middle" font-size="11" fill="var(--muted)">out</text>
+      <!-- envelope path -->
+      <rect x="150" y="140" width="120" height="36" rx="8" fill="var(--panel)" stroke="var(--line-strong)"/>
+      <text x="210" y="163" text-anchor="middle" font-size="11" fill="var(--ink)">整形関数 f(|x|)</text>
+      <rect x="320" y="140" width="110" height="36" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/>
+      <text x="375" y="163" text-anchor="middle" font-size="11" fill="var(--accent-ink)">供給変調器</text>
+      <g stroke="var(--line-strong)" stroke-width="1.4" fill="none">
+        <line x1="90" y1="59" x2="90" y2="158" marker-end="url(#a75)"/>
+        <line x1="90" y1="158" x2="148" y2="158" marker-end="url(#a75)"/>
+        <line x1="270" y1="158" x2="318" y2="158" marker-end="url(#a75)"/>
+      </g>
+      <text x="120" y="120" font-size="10" fill="var(--muted)">|x| 包絡線</text>
+      <path d="M375,140 L375,110 L373,110 L373,80" fill="none" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#a75a)"/>
+      <text x="405" y="104" font-size="10" fill="var(--accent-ink)">Vdd</text>
+      <!-- timing note -->
+      <path d="M210,78 L210,140" stroke="var(--warn)" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
+      <text x="210" y="200" text-anchor="middle" font-size="10" fill="var(--warn)">RF 経路と供給経路のタイミングをサンプル精度で整合</text>
+    </svg>
+    <figcaption class="fig"><b>図 7.2　ET と DPD の統合。</b>RF 経路は供給電圧も加味した 2 次元 DPD を通り、包絡線経路は整形関数→供給変調器で電源を動かす。
+      <b>両経路のタイミング整合</b>が ET-DPD の成否を分ける。</figcaption>
+  </figure>
+
   <div class="call">
     <div class="label">第7章 実務への含意</div>
     <p>高周波・狭帯域では Doherty より <strong>ET＋DPD</strong>、あるいは<strong>深バックオフ＋DPD＋放熱</strong>が現実的。
@@ -1075,6 +1146,52 @@
     <li><strong>Julia / Python</strong>：モデル同定（最小二乗 <span class="mono">θ=Φ\y</span>）、NN-DPD のプロトタイピング。</li>
     <li><strong>回路シミュレータ（Harmonic Balance / X-parameters）</strong>：デバイス非線形の物理検証。</li>
   </ul>
+  <h3>8.7 CFR（クレストファクタ低減）と DPD の協調</h3>
+  <p>商用の送信機・トランシーバでは、DPD の<strong>手前に CFR（Crest Factor Reduction＝PAPR 低減）</strong>を置くのが定石である。
+    PAPR が高いほど深いバックオフが要り効率が落ちるため、CFR で尖頭をあらかじめ削ってから DPD で線形化する。両者は役割が違う。</p>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>CFR</th><th>DPD</th></tr></thead>
+    <tbody>
+      <tr><td>目的</td><td>PAPR（尖頭）を下げる</td><td>非線形歪みを打ち消す</td></tr>
+      <tr><td>作用</td><td>信号そのものを整形（尖頭を削る）</td><td>PA の逆特性を前置</td></tr>
+      <tr><td>代償</td><td>EVM がわずかに増える</td><td>演算量・観測系が要る</td></tr>
+    </tbody>
+  </table></div>
+  <p>代表的な CFR 手法は、(i) <strong>クリッピング＋フィルタリング</strong>（尖頭を制限し帯域外を除去。反復して EVM とのバランスを取る）、
+    (ii) <strong>ピーク・ウィンドウイング</strong>（尖頭に窓関数を掛けて滑らかに抑圧）、
+    (iii) <strong>トーン・リザベーション</strong>（未使用サブキャリアに逆位相ピークを載せる。OFDM 系）である。</p>
+  <figure>
+    <svg class="diagram" viewBox="0 0 640 180" role="img" aria-label="送信信号処理チェーンの図。ベースバンドからCFRでPAPRを下げ、DPDで線形化し、DACとPAへ。CFRは尖頭を削りDPDは歪みを打ち消す。">
+      <defs><marker id="a8" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--line-strong)"/></marker></defs>
+      <g font-family="IBM Plex Sans" text-anchor="middle">
+        <rect x="24" y="54" width="96" height="40" rx="8" fill="var(--panel)" stroke="var(--line-strong)"/><text x="72" y="79" font-size="11" fill="var(--ink)">BB 64QAM</text>
+        <rect x="160" y="54" width="96" height="40" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="208" y="73" font-size="11" fill="var(--accent-ink)">CFR</text><text x="208" y="88" font-size="9" fill="var(--muted)">PAPR↓</text>
+        <rect x="296" y="54" width="96" height="40" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="344" y="73" font-size="11" fill="var(--accent-ink)">DPD</text><text x="344" y="88" font-size="9" fill="var(--muted)">歪み↓</text>
+        <rect x="432" y="54" width="80" height="40" rx="8" fill="var(--panel)" stroke="var(--line-strong)"/><text x="472" y="79" font-size="11" fill="var(--ink)">DAC→PA</text>
+      </g>
+      <g stroke="var(--line-strong)" stroke-width="1.4" fill="none">
+        <line x1="120" y1="74" x2="158" y2="74" marker-end="url(#a8)"/>
+        <line x1="256" y1="74" x2="294" y2="74" marker-end="url(#a8)"/>
+        <line x1="392" y1="74" x2="430" y2="74" marker-end="url(#a8)"/>
+        <line x1="512" y1="74" x2="560" y2="74" marker-end="url(#a8)"/>
+      </g>
+      <text x="536" y="67" font-size="10" fill="var(--muted)">RF出力</text>
+      <text x="320" y="128" text-anchor="middle" font-size="10.5" fill="var(--muted)">CFR で尖頭を削ってから DPD で線形化 ― 効率と線形性を両取り</text>
+    </svg>
+    <figcaption class="fig"><b>図 8.2　CFR＋DPD の信号処理チェーン。</b>CFR で PAPR（尖頭）を下げ、DPD で非線形を打ち消す。
+      商用送信機・トランシーバではこの二段が定石で、CFR の EVM 代償と効率改善を天秤にかけて設定する。</figcaption>
+  </figure>
+
+  <h3>8.8 実装プラットフォームの比較</h3>
+  <div class="tw"><table>
+    <thead><tr><th>プラットフォーム</th><th>帯域/スループット</th><th>柔軟性</th><th>レイテンシ</th><th>向く用途</th></tr></thead>
+    <tbody>
+      <tr><td>トランシーバ SoC 内蔵</td><td>広帯域・高</td><td>低（固定波形寄り）</td><td>小・確定的</td><td>基地局・量産</td></tr>
+      <tr class="best"><td><strong>FPGA / RFSoC（DFE）</strong></td><td>広帯域・高</td><td><strong>高（自作可）</strong></td><td>小〜中</td><td>特機・放送・研究</td></tr>
+      <tr><td>汎用 DSP / CPU ソフト</td><td>狭帯域・低</td><td>高</td><td>大</td><td>狭帯域・低レート（STL）</td></tr>
+    </tbody>
+  </table></div>
+
   <div class="call">
     <div class="label">第8章 実務への含意</div>
     <p>「どこで DPD を回すか」は用途で決まる。大量生産・標準波形は<strong>トランシーバ内蔵</strong>、
@@ -1161,6 +1278,21 @@
     <figcaption class="fig"><b>図 9.1　DPD の検証フロー。</b>最小モデルから始め、DPD OFF/ON の対比で改善量を数値化する。
       不足なら次数を上げ、GMP・NN へ戻る反復。基準測定・再測とも<b>スペアナのマスク測定で完結でき I/Q 不要</b>。</figcaption>
   </figure>
+
+  <h3>9.6 数値例 ― 狭帯域 STL への当てはめ</h3>
+  <p>本書の指針を、6.5 GHz M バンド STL（64QAM・α=0.2・R<sub>s</sub>=374.4 ksps）に当てはめて具体化する。</p>
+  <h4>係数数の見積り</h4>
+  <p>MP を 7 次・メモリー深さ 5 とすると、係数数は ⌈7/2⌉×(5+1) = 4×6 = <strong>24 係数</strong>。
+    複素係数なので実装上は実部・虚部で 48 実数。狭帯域ゆえ更新レートも低く、ソフト DPD でも十分回せる規模である。</p>
+  <div class="eq">係数数 = ⌈K/2⌉ × (M+1) = ⌈7/2⌉ × (5+1) = 4 × 6 = 24</div>
+  <h4>観測帯域の見積り</h4>
+  <p>占有帯域は約 405 kHz。3〜5 次の再成長を捉えるには信号帯域の 3〜5 倍が目安なので、
+    <strong>観測帯域 ≈ 1.2〜2 MHz</strong>で足りる。高速 ADC は不要で、フィードバック受信機は簡素にできる。</p>
+  <div class="eq">観測帯域 ≈ (3〜5) × 405 kHz ≈ 1.2 〜 2.0 MHz</div>
+  <h4>期待される効果</h4>
+  <p>第10章のシミュレーションでは、この設定の MP-DPD で ±250 kHz の肩を約 7.6 dB 改善し、
+    10 W 級デバイスでも 2 W でマスク合格圏に入った。<strong>狭帯域・中庸な非線形では、24 係数程度の MP で実務要件を満たせる</strong>
+    ことを示す好例である。</p>
 
   <div class="call">
     <div class="label">第9章 実務への含意</div>
@@ -1309,6 +1441,22 @@
     <p>DPD が効かない時、疑う順は <strong>①観測系（帯域・アライメント・飽和）→②数値条件（正規化・条件数）→③下地（メモリーそのもの）→④モデル</strong>。
       モデルを複雑化する前に、この順で潰すこと。</p>
   </div>
+
+  <!-- Appendix D -->
+  <h3>付録 D ― トラブルシューティング</h3>
+  <p>DPD 立ち上げで頻出する症状と、疑う順・対処をまとめる。</p>
+  <div class="tw"><table>
+    <thead><tr><th>症状</th><th>まず疑う原因</th><th>対処</th></tr></thead>
+    <tbody>
+      <tr><td>DPD ON で ACLR がほとんど改善しない</td><td>観測帯域不足／時間整合ずれ</td><td>観測帯域を信号の 3〜5 倍に、分数サンプルでアライメント再調整</td></tr>
+      <tr><td>DPD ON でかえって悪化・発散</td><td>係数の暴れ（条件数悪化）／観測飽和</td><td>正規化(RMS=1)＋リッジ正則化、観測レベルを下げ飽和回避</td></tr>
+      <tr><td>EVM は良いが近接肩が残る</td><td>メモリー項不足</td><td>メモリー深さ↑、または GMP 交差項を追加</td></tr>
+      <tr><td>上下 IM3 が非対称のまま</td><td>電気的メモリー（バイアス）</td><td>ビデオ帯域インピーダンス低減、バイアス回路見直し</td></tr>
+      <tr><td>時間が経つと劣化する</td><td>熱ドリフト</td><td>背景適応(LMS/RLS)を有効化、放熱強化</td></tr>
+      <tr><td>周波数を変えると効かない</td><td>周波数依存特性</td><td>周波数別係数、または都度再適応</td></tr>
+      <tr><td>係数が毎回大きく変わる</td><td>過学習／基底相関</td><td>次数・深さを下げる、直交基底、学習データ増</td></tr>
+    </tbody>
+  </table></div>
 
   <!-- References -->
   <h3>参考文献</h3>
