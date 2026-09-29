@@ -1,0 +1,5 @@
+dependencies:
+  idf: ">=5.1"
+  # 2.x は API が変わるため 1.x 系に固定 (tinyusb_net_init(TINYUSB_USBDEV_0, ...) を使用)
+  espressif/esp_tinyusb:
+    version: "^1.4.4"

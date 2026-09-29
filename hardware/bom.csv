@@ -1,0 +1,26 @@
+Reference,Qty,Value,Footprint,Manufacturer,MPN,Note
+C1,1,4.7uF 25V,C_0805_2012Metric,Murata,GRM21BR61E475KA12L,LDO 入力 (VBUS 総容量 ≤10uF を守る)
+C2,1,22uF 10V,C_0805_2012Metric,Murata,GRM21BR61A226ME44L,LDO 出力 / モジュール 3V3 バルク
+C3,1,0.1uF,C_0603_1608Metric,Murata,GRM188R71H104KA93D,モジュール 3V3 ピン直近
+C5,1,4.7nF 100V,C_0603_1608Metric,Murata,GRM188R72A472KA01D,シールド-GND 高周波バイパス
+C6,1,1uF,C_0603_1608Metric,Murata,GRM188R61E105KA12D,EN RC 遅延 (電源立上り対策)
+F1,1,0.5A hold,Fuse_1206_3216Metric,Bourns,MF-NSMF050-2,PTC 0.5A hold / 1.0A trip
+J1,1,USB-C (USB2.0),USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal,GCT,USB4105-GF-A,USB2.0 専用 16P レセプタクル
+"R1, R2",2,5.1k,R_0603_1608Metric,Yageo,RC0603FR-075K1L,CC1 プルダウン (UFP/Sink)
+R3,1,10k,R_0603_1608Metric,Yageo,RC0603FR-0710KL,EN プルアップ (RC 遅延)
+"R4, R5",2,0,R_0603_1608Metric,Yageo,RC0603JR-070RL,D+ 直列 (予約。波形/EMI を見て 0〜22Ω)
+R6,1,1M,R_0603_1608Metric,Yageo,RC0603FR-071ML,シールド-GND ブリーダ (ケース方針次第で DNP/0Ω)
+SW1,1,RESET,SW_SPST_PTS810,C&K,PTS810 SJM 250 SMTR LFS,EN (リセット)
+SW2,1,BOOT,SW_SPST_PTS810,C&K,PTS810 SJM 250 SMTR LFS,GPIO0 (ダウンロードモード)
+TP1,1,TXD0,TestPoint_Pad_D1.5mm,-,-,UART0 TX (GPIO43)
+TP2,1,RXD0,TestPoint_Pad_D1.5mm,-,-,UART0 RX (GPIO44)
+TP3,1,GND,TestPoint_Pad_D1.5mm,-,-,UART 用 GND
+TP4,1,3V3,TestPoint_Pad_D1.5mm,-,-,3V3 モニタ
+TP5,1,EN,TestPoint_Pad_D1.5mm,-,-,自動書込み用 EN
+TP6,1,IO0,TestPoint_Pad_D1.5mm,-,-,自動書込み用 GPIO0
+U1,1,ESP32-S3-WROOM-1U-N8R2,ESP32-S3-WROOM-1U,Espressif,ESP32-S3-WROOM-1U-N8R2,外部アンテナ版 (モジュール上に U.FL 実装済み)
+U2,1,USBLC6-2SC6,SOT-23-6,STMicroelectronics,USBLC6-2SC6,USB D+/D- ESD 保護 (コネクタ直近)
+U3,1,AP2112K-3.3,SOT-23-5,Diodes Inc.,AP2112K-3.3TRG1,3.3V 600mA LDO
+CBL1,1,IPEX MHF I (U.FL) - SMA(R-SMA) バルクヘッド ピグテール 1.13mm 〜100mm,(基板外),-,-,モジュール上の U.FL → ケースパネル。損失 ~0.5dB/10cm 程度。コネクタ種別 (SMA/R-SMA) はアンテナに合わせる
+ANT1,1,2.4GHz 外部アンテナ (技適の工事設計認証に記載された型式のみ),(基板外),-,要確認,指定外アンテナは技適違反。WROOM-1U の認証情報でアンテナ型式・利得を確認して同一品を購入
+ENC1,1,金属ケース,(基板外),-,-,USB-C / SMA 用の穴加工。シールドとケースの接続方針を決める

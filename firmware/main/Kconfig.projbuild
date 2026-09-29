@@ -1,0 +1,20 @@
+menu "USB-LAN adapter"
+
+    config USB_LAN_WIFI_SSID
+        string "Default Wi-Fi SSID"
+        default ""
+        help
+            NVS に Wi-Fi 設定が無い場合に使う SSID。空なら UART コンソールの
+            `wifi <ssid> <password>` コマンドで設定するまで接続しない。
+
+    config USB_LAN_WIFI_PASSWORD
+        string "Default Wi-Fi password"
+        default ""
+
+    config USB_LAN_TX_TIMEOUT_MS
+        int "Wi-Fi -> USB send timeout (ms)"
+        default 100
+        help
+            ホストが NCM を読んでいないときに Wi-Fi 受信バッファを保持する最大時間。
+
+endmenu
