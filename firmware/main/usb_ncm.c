@@ -20,6 +20,9 @@
 
 static const char *TAG = "usb_ncm";
 
+static uint8_t s_mac[6];
+static volatile bool s_link_up;
+
 esp_err_t usb_net_init(const uint8_t mac[6], usb_net_rx_cb_t rx_cb, usb_net_free_cb_t free_cb)
 {
     // 内蔵 PHY (GPIO19 = D-, GPIO20 = D+)。VID/PID・文字列は esp_tinyusb の既定 (menuconfig で変更)
@@ -28,6 +31,7 @@ esp_err_t usb_net_init(const uint8_t mac[6], usb_net_rx_cb_t rx_cb, usb_net_free
     };
     ESP_RETURN_ON_ERROR(tinyusb_driver_install(&tusb_cfg), TAG, "tinyusb_driver_install");
 
+    memcpy(s_mac, mac, 6);
     tinyusb_net_config_t net_cfg = {
         .on_recv_callback = rx_cb,
         .free_tx_buffer = free_cb,
@@ -47,7 +51,22 @@ esp_err_t usb_net_send(void *buffer, uint16_t len, void *buff_free_arg, uint32_t
 void usb_net_set_link(bool up)
 {
     // TODO: NCM の NETWORK_CONNECTION 通知でホストにリンク状態を伝える
-    (void)up;
+    s_link_up = up;
+}
+
+void usb_net_get_mac(uint8_t mac[6])
+{
+    memcpy(mac, s_mac, 6);
+}
+
+bool usb_net_get_link(void)
+{
+    return s_link_up;
+}
+
+void usb_net_on_driver_start(void)
+{
+    // NCM はフレーム境界を USB 側が持つので仕切り直すものはない
 }
 
 #endif // CONFIG_TINYUSB_NET_MODE_NCM

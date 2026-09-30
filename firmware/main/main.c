@@ -2,6 +2,7 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "console.h"
+#include "ota_usb.h"
 #include "wifi_bridge.h"
 
 void app_main(void)
@@ -16,4 +17,7 @@ void app_main(void)
 
     ESP_ERROR_CHECK(wifi_bridge_start());
     ESP_ERROR_CHECK(console_start());
+
+    // ここまで来れば起動成功。USB 経由で更新した直後なら、これで新しいファームが確定する
+    ota_usb_mark_app_valid();
 }

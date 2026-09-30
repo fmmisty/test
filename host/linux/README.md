@@ -16,7 +16,7 @@ ESP32-S3 ── bulk IN ──> usblan_tap ──> TAP usblan0 ──> Linux (DH
 
 ```sh
 sudo apt install libusb-1.0-0-dev build-essential pkg-config
-make          # usblan_tap
+make          # usblan_tap, usblan_ota
 make test     # フレーム分解のユニットテスト
 ```
 
@@ -31,6 +31,16 @@ ping -I usblan0 <ゲートウェイ>
 - TAP の MAC はデバイスの Wi-Fi STA MAC に自動で合わせる (L2 ブリッジの前提)。
 - Wi-Fi のリンク状態を 1 秒ごとに問い合わせ、TAP のキャリア (up/down) に反映する。
 - root 以外で USB を開くには `sudo make install-udev` (plugdev グループ)。TAP 作成には CAP_NET_ADMIN が要る。
+
+## ファーム更新 (usblan_ota)
+
+```sh
+sudo ./usblan_ota ../../firmware/build/usb_lan.bin
+```
+
+USB-LAN の線のまま (ボタン操作なしで) ファームを書き換える。ベンダー制御要求で送るので、
+NCM ビルド (カーネルの cdc_ncm が使用中) でも、ベンダークラスビルドで `usblan_tap` が動いていても使える。
+既定で 1209:0001 (ベンダークラス) → 303a:4000 (NCM) の順に探す。別の VID/PID は `-v`/`-p` で指定。
 
 ## Wi-Fi のモードごとのホスト設定
 

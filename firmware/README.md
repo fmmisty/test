@@ -11,7 +11,14 @@ ESP-IDF 5.1 以降 + esp_tinyusb 1.x。ESP32 は IP を持たず、Wi-Fi と USB
 
 切り替えるときは `sdkconfig` を消してからビルドする。
 
-書き込み: BOOT を押しながら RESET → ROM の USB-Serial/JTAG が出るので `idf.py -p /dev/ttyACM0 flash`。
+## 書き込み
+
+- **初回**: BOOT を押しながら RESET → ROM の USB-Serial/JTAG が出るので `idf.py -p /dev/ttyACM0 flash`。
+- **2 回目以降 (USB-LAN の線のまま、ボタン不要)**: `host/linux/usblan_ota build/usb_lan.bin`
+  - ベンダー制御要求でイメージを送り、空いている OTA 面 (ota_0 / ota_1) に書いて再起動する。
+  - NCM ビルドでもベンダークラスビルドでも使える (動作中の通信を止める必要もない)。
+  - 新しいファームが起動処理を最後まで終えられなかった場合は、次の再起動で前のファームに戻る (ロールバック)。
+  - パーティションは `partitions.csv` (3MB × 2 面)。
 
 ## Wi-Fi モード
 

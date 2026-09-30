@@ -30,3 +30,14 @@ esp_err_t usb_net_send(void *buffer, uint16_t len, void *buff_free_arg, uint32_t
 
 /** 上流 (Wi-Fi) のリンク状態をホストへ伝える (ベンダークラスのみ有効) */
 void usb_net_set_link(bool up);
+
+/* ---- ベンダー制御要求 (usb_ctrl.c) から使う ---- */
+
+/** usb_net_init() で渡された MAC */
+void usb_net_get_mac(uint8_t mac[6]);
+
+/** usb_net_set_link() で最後に設定された状態 */
+bool usb_net_get_link(void);
+
+/** ホスト側ドライバが起動した (GET_VERSION を受けた)。受信ストリームを仕切り直す */
+void usb_net_on_driver_start(void);

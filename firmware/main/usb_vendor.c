@@ -129,39 +129,6 @@ esp_err_t usb_net_send(void *buffer, uint16_t len, void *buff_free_arg, uint32_t
     return ret;
 }
 
-// ---- ベンダー制御要求 ----------------------------------------------------
-
-bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const *req)
-{
-    static uint8_t resp[8];   // DATA ステージが終わるまで有効である必要がある
-
-    if (stage != CONTROL_STAGE_SETUP) {
-        return true;
-    }
-    if (req->bmRequestType_bit.type != TUSB_REQ_TYPE_VENDOR ||
-        req->bmRequestType_bit.direction != TUSB_DIR_IN) {
-        return false;   // STALL
-    }
-
-    switch (req->bRequest) {
-    case USBLAN_REQ_GET_VERSION:
-        // ドライバ起動時に呼ばれるので、ここで受信ストリームを仕切り直す
-        usblan_parser_reset(&s_parser);
-        tud_vendor_n_read_flush(VENDOR_ITF);
-        resp[0] = USBLAN_PROTO_VERSION & 0xff;
-        resp[1] = USBLAN_PROTO_VERSION >> 8;
-        return tud_control_xfer(rhport, req, resp, 2);
-    case USBLAN_REQ_GET_MAC:
-        memcpy(resp, s_mac, 6);
-        return tud_control_xfer(rhport, req, resp, 6);
-    case USBLAN_REQ_GET_LINK:
-        resp[0] = s_link_up ? 1 : 0;
-        return tud_control_xfer(rhport, req, resp, 1);
-    default:
-        return false;
-    }
-}
-
 // ---- 初期化 --------------------------------------------------------------
 
 esp_err_t usb_net_init(const uint8_t mac[6], usb_net_rx_cb_t rx_cb, usb_net_free_cb_t free_cb)
@@ -189,6 +156,23 @@ esp_err_t usb_net_init(const uint8_t mac[6], usb_net_rx_cb_t rx_cb, usb_net_free
 void usb_net_set_link(bool up)
 {
     s_link_up = up;
+}
+
+void usb_net_get_mac(uint8_t mac[6])
+{
+    memcpy(mac, s_mac, 6);
+}
+
+bool usb_net_get_link(void)
+{
+    return s_link_up;
+}
+
+// TinyUSB タスク (制御要求の処理中) から呼ばれるので、rx_cb と競合しない
+void usb_net_on_driver_start(void)
+{
+    usblan_parser_reset(&s_parser);
+    tud_vendor_n_read_flush(VENDOR_ITF);
 }
 
 #endif // CONFIG_TINYUSB_VENDOR_COUNT > 0

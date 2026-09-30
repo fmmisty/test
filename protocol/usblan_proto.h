@@ -12,10 +12,18 @@
  *   len = 14..1518 (宛先 MAC から、FCS は含まない)。
  *   マジック 2 バイトは取りこぼし時の再同期用。
  *
- * ベンダー制御要求 (bmRequestType = 0xC0 または 0xC1, Device-to-Host):
+ * ベンダー制御要求 (Device-to-Host, bmRequestType = 0xC0/0xC1):
  *   0x01 GET_VERSION : 2 byte LE プロトコル版数。受信側パーサもリセットされる (ドライバ起動時に呼ぶ)
- *   0x02 GET_MAC     : 6 byte ホスト側 NIC に設定すべき MAC (= Wi-Fi STA の MAC)
- *   0x03 GET_LINK    : 1 byte  1 = Wi-Fi 接続中, 0 = 切断
+ *   0x02 GET_MAC     : 6 byte ホスト側 NIC に設定すべき MAC (= 使用中の Wi-Fi I/F の MAC)
+ *   0x03 GET_LINK    : 1 byte  1 = Wi-Fi 接続中 (AP モードでは SoftAP 起動中), 0 = 切断
+ *   0x13 OTA_STATUS  : 8 byte  u32 LE 書込み済みバイト数, i32 LE 最後のエラー (esp_err_t, 0 = OK)
+ *
+ * ファーム更新 (Host-to-Device, bmRequestType = 0x40/0x41)。ベンダー型の制御要求は
+ * インタフェース構成に関係なく届くので、CDC-NCM ビルドでも使える (recipient = device でよい):
+ *   0x10 OTA_BEGIN   : data = u32 LE イメージサイズ。次の OTA パーティションを消去して準備
+ *   0x11 OTA_DATA    : data = イメージの続き (最大 USBLAN_OTA_CHUNK byte, 先頭から順に送る)
+ *   0x12 OTA_END     : data なし。検証して起動パーティションを切替え、約 0.5 秒後に再起動
+ *   失敗した要求は STALL する。詳細は OTA_STATUS で取得する。
  */
 #pragma once
 
@@ -23,7 +31,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#define USBLAN_PROTO_VERSION    1
+#define USBLAN_PROTO_VERSION    2
 
 /* 開発用の既定 VID/PID (pid.codes のテスト用 PID。社外配布する場合は正式な PID を取得すること) */
 #define USBLAN_DEFAULT_VID      0x1209
@@ -38,6 +46,12 @@
 #define USBLAN_REQ_GET_VERSION  0x01
 #define USBLAN_REQ_GET_MAC      0x02
 #define USBLAN_REQ_GET_LINK     0x03
+#define USBLAN_REQ_OTA_BEGIN    0x10
+#define USBLAN_REQ_OTA_DATA     0x11
+#define USBLAN_REQ_OTA_END      0x12
+#define USBLAN_REQ_OTA_STATUS   0x13
+
+#define USBLAN_OTA_CHUNK        1024
 
 static inline void usblan_encode_header(uint8_t hdr[USBLAN_HDR_LEN], uint16_t len)
 {

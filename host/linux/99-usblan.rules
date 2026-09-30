@@ -1,2 +1,4 @@
 # ESP32-S3 USB-LAN (開発用 VID/PID 1209:0001) を plugdev グループから libusb で開けるようにする
 SUBSYSTEM=="usb", ATTR{idVendor}=="1209", ATTR{idProduct}=="0001", MODE="0660", GROUP="plugdev"
+# CDC-NCM ビルド (esp_tinyusb 既定 VID/PID) に usblan_ota で更新をかけるとき用
+SUBSYSTEM=="usb", ATTR{idVendor}=="303a", ATTR{idProduct}=="4000", MODE="0660", GROUP="plugdev"
