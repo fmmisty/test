@@ -14,6 +14,7 @@
 #include <string.h>
 #include "esp_check.h"
 #include "esp_log.h"
+#include "esp_mac.h"
 #include "freertos/FreeRTOS.h"
 #include "tinyusb.h"
 #include "tinyusb_net.h"
