@@ -32,6 +32,33 @@ ping -I usblan0 <ゲートウェイ>
 - Wi-Fi のリンク状態を 1 秒ごとに問い合わせ、TAP のキャリア (up/down) に反映する。
 - root 以外で USB を開くには `sudo make install-udev` (plugdev グループ)。TAP 作成には CAP_NET_ADMIN が要る。
 
+## Wi-Fi のモードごとのホスト設定
+
+ファームの Wi-Fi は 2 モード (UART コンソールの `mode sta|ap` で切替、再起動で反映)。
+どちらでも ESP32 自体は IP を持たず、フレームをそのまま中継するだけ。
+
+### STA モード (既存の Wi-Fi ルーターに参加)
+
+```sh
+sudo dhclient usblan0          # ルーターの DHCP からアドレスをもらう
+```
+スマホは同じルーターにつなぎ、ホストの IP にアクセスする。
+
+### AP モード (ESP32 がアクセスポイント、スマホが直接つながる)
+
+ホストが AP の「中の人」になるので、ホストに固定 IP を振って DHCP サーバを動かす。
+
+```sh
+sudo ip addr add 192.168.4.1/24 dev usblan0
+sudo dnsmasq --no-daemon --interface=usblan0 --bind-interfaces \
+     --dhcp-range=192.168.4.10,192.168.4.100,12h
+```
+スマホで SSID (既定 `usb-lan`) に接続すると 192.168.4.x が割り当てられ、
+`http://192.168.4.1/` でホスト上の設定画面 (送信機の周波数設定など) に届く。
+インターネットには出られないので、Android は「インターネット未接続」と出るが接続は維持される。
+
+NCM モードのファームでも同じ (インタフェース名が `usb0` や `enx...` になるだけ)。
+
 ## ファーム側のビルド
 
 ```sh
