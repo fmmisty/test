@@ -8,7 +8,7 @@
 #include "esp_wifi.h"
 #include "esp_private/wifi.h"
 #include "sdkconfig.h"
-#include "usb_ncm.h"
+#include "usb_net.h"
 
 static const char *TAG = "bridge";
 
@@ -34,7 +34,7 @@ static void wifi_rx_free(void *eb, void *ctx)
 
 static esp_err_t wifi_rx(void *buffer, uint16_t len, void *eb)
 {
-    if (usb_ncm_send(buffer, len, eb, CONFIG_USB_LAN_TX_TIMEOUT_MS) != ESP_OK) {
+    if (usb_net_send(buffer, len, eb, CONFIG_USB_LAN_TX_TIMEOUT_MS) != ESP_OK) {
         // ホスト未接続 / NCM 未オープン時はここに来る
         esp_wifi_internal_free_rx_buffer(eb);
         ESP_LOGD(TAG, "usb tx drop (%u)", len);
@@ -52,12 +52,14 @@ static void wifi_event_handler(void *arg, esp_event_base_t base, int32_t id, voi
         ESP_LOGI(TAG, "Wi-Fi connected");
         esp_wifi_internal_reg_rxcb(WIFI_IF_STA, wifi_rx);
         s_connected = true;
+        usb_net_set_link(true);
         // TODO: ホストに再 DHCP させたい場合は NCM のリンク状態通知 (NETWORK_CONNECTION) を検討
         break;
     case WIFI_EVENT_STA_DISCONNECTED: {
         const wifi_event_sta_disconnected_t *ev = data;
         ESP_LOGW(TAG, "Wi-Fi disconnected (reason %d), retrying", ev->reason);
         s_connected = false;
+        usb_net_set_link(false);
         esp_wifi_internal_reg_rxcb(WIFI_IF_STA, NULL);
         // TODO: 指数バックオフ
         esp_wifi_connect();
@@ -94,7 +96,7 @@ esp_err_t wifi_bridge_start(void)
     }
 
     // USB はホストから見て常に存在させ、Wi-Fi 未接続中のフレームは破棄する
-    ESP_ERROR_CHECK(usb_ncm_init(mac, usb_rx, wifi_rx_free));
+    ESP_ERROR_CHECK(usb_net_init(mac, usb_rx, wifi_rx_free));
     ESP_ERROR_CHECK(esp_wifi_start());  // SSID があれば STA_START で接続開始
     return ESP_OK;
 }

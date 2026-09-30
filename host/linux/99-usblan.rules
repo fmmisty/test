@@ -1,0 +1,2 @@
+# ESP32-S3 USB-LAN (開発用 VID/PID 1209:0001) を plugdev グループから libusb で開けるようにする
+SUBSYSTEM=="usb", ATTR{idVendor}=="1209", ATTR{idProduct}=="0001", MODE="0660", GROUP="plugdev"

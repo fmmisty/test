@@ -3,3 +3,6 @@ dependencies:
   # 2.x は API が変わるため 1.x 系に固定 (tinyusb_net_init(TINYUSB_USBDEV_0, ...) を使用)
   espressif/esp_tinyusb:
     version: "^1.4.4"
+  # usb_vendor.c の tud_vendor_rx_cb(itf, buffer, bufsize) は 0.17 以降のシグネチャ
+  espressif/tinyusb:
+    version: "~0.19.0"

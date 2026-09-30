@@ -1,4 +1,15 @@
-#include "usb_ncm.h"
+#include "sdkconfig.h"
+
+#if CONFIG_TINYUSB_NET_MODE_NCM && (CONFIG_TINYUSB_VENDOR_COUNT > 0)
+#error "Enable either CDC-NCM or the vendor interface, not both"
+#endif
+#if !CONFIG_TINYUSB_NET_MODE_NCM && !(CONFIG_TINYUSB_VENDOR_COUNT > 0)
+#error "No USB network interface: set CONFIG_TINYUSB_NET_MODE_NCM or CONFIG_TINYUSB_VENDOR_COUNT=1"
+#endif
+
+#if CONFIG_TINYUSB_NET_MODE_NCM
+
+#include "usb_net.h"
 
 #include <string.h>
 #include "esp_check.h"
@@ -9,7 +20,7 @@
 
 static const char *TAG = "usb_ncm";
 
-esp_err_t usb_ncm_init(const uint8_t mac[6], usb_ncm_rx_cb_t rx_cb, usb_ncm_free_cb_t free_cb)
+esp_err_t usb_net_init(const uint8_t mac[6], usb_net_rx_cb_t rx_cb, usb_net_free_cb_t free_cb)
 {
     // 内蔵 PHY (GPIO19 = D-, GPIO20 = D+)。VID/PID・文字列は esp_tinyusb の既定 (menuconfig で変更)
     const tinyusb_config_t tusb_cfg = {
@@ -28,7 +39,15 @@ esp_err_t usb_ncm_init(const uint8_t mac[6], usb_ncm_rx_cb_t rx_cb, usb_ncm_free
     return ESP_OK;
 }
 
-esp_err_t usb_ncm_send(void *buffer, uint16_t len, void *buff_free_arg, uint32_t timeout_ms)
+esp_err_t usb_net_send(void *buffer, uint16_t len, void *buff_free_arg, uint32_t timeout_ms)
 {
     return tinyusb_net_send_sync(buffer, len, buff_free_arg, pdMS_TO_TICKS(timeout_ms));
 }
+
+void usb_net_set_link(bool up)
+{
+    // TODO: NCM の NETWORK_CONNECTION 通知でホストにリンク状態を伝える
+    (void)up;
+}
+
+#endif // CONFIG_TINYUSB_NET_MODE_NCM

@@ -6,9 +6,9 @@
 /**
  * Wi-Fi STA <-> USB CDC-NCM の L2 ブリッジを開始する。
  *
- *   社内 AP  <--Wi-Fi-->  [ESP32-S3 STA ==(L2)== USB NCM]  <--USB-->  PC
+ *   社内 AP  <--Wi-Fi-->  [ESP32-S3 STA ==(L2)== USB]  <--USB-->  PC
  *
- * NCM でホストに見せる MAC を Wi-Fi STA の MAC と同一にしているので、フレームは
+ * USB 側でホストに見せる MAC を Wi-Fi STA の MAC と同一にしているので、フレームは
  * 書き換えずにそのまま転送できる (ESP 側に IP スタックは持たない)。
  * PC は社内ネットワークの DHCP から直接アドレスを取得する。
  */
