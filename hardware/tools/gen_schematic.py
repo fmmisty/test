@@ -124,6 +124,16 @@ SYMBOLS = {
     "Polyfuse": two_pin("Polyfuse", "F", "fuse"),
     "SW_Push": two_pin("SW_Push", "SW", "sw"),
     "TestPoint": one_pin("TestPoint", "TP"),
+    "LED": two_pin("LED", "D", "led"),
+    # 送信機 (FM) 接続用の拡張ヘッダ。ピン番号は 2x8 ヘッダの実ピン番号 (奇数=左列, 偶数=右列)
+    "Conn_02x08": ic_symbol(
+        "Conn_02x08", ref="J", width=12.7,
+        left=[("1", "+3V3", "passive"), ("3", "GND", "passive"), ("5", "SDA", "passive"),
+              ("7", "TXD", "passive"), ("9", "RST", "passive"), ("11", "MUX", "passive"),
+              ("13", "CLK", "passive"), ("15", "LE", "passive")],
+        right=[("2", "+5V", "passive"), ("4", "GND", "passive"), ("6", "SCL", "passive"),
+               ("8", "RXD", "passive"), ("10", "EN", "passive"), ("12", "ADC", "passive"),
+               ("14", "DATA", "passive"), ("16", "GND", "passive")]),
     "PWR_FLAG": dict(name="PWR_FLAG", ref="#FLG", body=("flag",),
                      pins=[("1", "pwr", "power_out", 0, 0, 90)],
                      show_names=False, show_numbers=False, power=True),
@@ -171,6 +181,13 @@ PARTS = [
     ("TP4", "TestPoint", "3V3", "TestPoint:TestPoint_Pad_D1.5mm", 353.06, 50.8, "-", "-", "3V3 モニタ"),
     ("TP5", "TestPoint", "EN", "TestPoint:TestPoint_Pad_D1.5mm", 363.22, 50.8, "-", "-", "自動書込み用 EN"),
     ("TP6", "TestPoint", "IO0", "TestPoint:TestPoint_Pad_D1.5mm", 373.38, 50.8, "-", "-", "自動書込み用 GPIO0"),
+    ("J2", "Conn_02x08", "FM I/F", "Connector_PinHeader_2.54mm:PinHeader_2x08_P2.54mm_Vertical",
+     345.44, 116.84, "-", "2x8 2.54mm ピンヘッダ", "送信機接続用 拡張ヘッダ (FPGA: UART1・RST / ADF4002: CLK・DATA・LE・MUXOUT / I2C / ADC)"),
+    ("R7", "R", "4.7k", FP["0603R"], 312.42, 96.52, "Yageo", "RC0603FR-074K7L", "I2C SDA プルアップ (送信機側にあれば DNP)"),
+    ("R8", "R", "4.7k", FP["0603R"], 322.58, 96.52, "Yageo", "RC0603FR-074K7L", "I2C SCL プルアップ (送信機側にあれば DNP)"),
+    ("R9", "R", "1k", FP["0603R"], 312.42, 165.1, "Yageo", "RC0603FR-071KL", "状態 LED 電流制限 (~1.2mA)"),
+    ("D1", "LED", "LED 緑", "LED_SMD:LED_0603_1608Metric", 312.42, 180.34, "Würth Elektronik", "150060GS75000",
+     "状態表示 (GPIO21, High で点灯)"),
     ("#FLG01", "PWR_FLAG", "PWR_FLAG", "", 30.48, 152.4, None, None, None),
     ("#FLG02", "PWR_FLAG", "PWR_FLAG", "", 30.48, 172.72, None, None, None),
     ("#FLG03", "PWR_FLAG", "PWR_FLAG", "", 30.48, 132.08, None, None, None),
@@ -188,12 +205,13 @@ OFFBOARD = [
 # ネット: net -> [(ref, pin), ...]
 NETS = {
     "VBUS": [("J1", "A4"), ("J1", "A9"), ("J1", "B4"), ("J1", "B9"), ("U2", "5"), ("F1", "1"), ("#FLG01", "1")],
-    "+5V": [("F1", "2"), ("C1", "1"), ("U3", "1"), ("U3", "3")],
-    "+3V3": [("U3", "5"), ("C2", "1"), ("C3", "1"), ("U1", "2"), ("R3", "1"), ("TP4", "1")],
+    "+5V": [("F1", "2"), ("C1", "1"), ("U3", "1"), ("U3", "3"), ("J2", "2")],
+    "+3V3": [("U3", "5"), ("C2", "1"), ("C3", "1"), ("U1", "2"), ("R3", "1"), ("TP4", "1"),
+             ("J2", "1"), ("R7", "1"), ("R8", "1")],
     "GND": [("J1", "A1"), ("J1", "A12"), ("J1", "B1"), ("J1", "B12"), ("R1", "2"), ("R2", "2"),
             ("R6", "2"), ("C5", "2"), ("U2", "2"), ("C1", "2"), ("U3", "2"), ("C2", "2"), ("C3", "2"),
             ("U1", "1"), ("U1", "40"), ("U1", "41"), ("C6", "2"), ("SW1", "2"), ("SW2", "2"),
-            ("TP3", "1"), ("#FLG02", "1")],
+            ("TP3", "1"), ("#FLG02", "1"), ("J2", "3"), ("J2", "4"), ("J2", "16"), ("D1", "1")],
     "SHIELD": [("J1", "S1"), ("R6", "1"), ("C5", "1"), ("#FLG03", "1")],
     "CC1": [("J1", "A5"), ("R1", "1")],
     "CC2": [("J1", "B5"), ("R2", "1")],
@@ -205,6 +223,21 @@ NETS = {
     "BOOT_IO0": [("U1", "27"), ("SW2", "1"), ("TP6", "1")],
     "UART_TX": [("U1", "37"), ("TP1", "1")],
     "UART_RX": [("U1", "36"), ("TP2", "1")],
+    # ---- 送信機 (FM) 接続用 拡張ヘッダ J2 ----
+    "I2C_SDA": [("U1", "12"), ("R7", "2"), ("J2", "5")],      # GPIO8
+    "I2C_SCL": [("U1", "17"), ("R8", "2"), ("J2", "6")],      # GPIO9
+    "FPGA_TXD": [("U1", "10"), ("J2", "7")],                  # GPIO17 (UART1 TX, ESP32 → FPGA)
+    "FPGA_RXD": [("U1", "11"), ("J2", "8")],                  # GPIO18 (UART1 RX, FPGA → ESP32)
+    "FPGA_RST": [("U1", "4"), ("J2", "9")],                   # GPIO4
+    "FM_TX_EN": [("U1", "5"), ("J2", "10")],                  # GPIO5 (RF 出力 ON/OFF)
+    "ADF_MUXOUT": [("U1", "6"), ("J2", "11")],                # GPIO6 (ADF4002 ロック検出, 入力)
+    "FM_ADC": [("U1", "39"), ("J2", "12")],                   # GPIO1 (ADC1_CH0)
+    "ADF_CLK": [("U1", "18"), ("J2", "13")],                  # GPIO10
+    "ADF_DATA": [("U1", "19"), ("J2", "14")],                 # GPIO11
+    "ADF_LE": [("U1", "20"), ("J2", "15")],                   # GPIO12
+    # ---- 状態 LED ----
+    "LED_DRV": [("U1", "23"), ("R9", "1")],                   # GPIO21
+    "LED_A": [("R9", "2"), ("D1", "2")],
 }
 # 意図的に未接続とするピン (no_connect マーカーを置く)
 NC_EXPLICIT = [("J1", "A8"), ("J1", "B8"), ("U3", "4")]
@@ -229,6 +262,14 @@ NOTES = [
     (180.34, 190.5, "EN: 10k/1uF の RC 遅延 + RESET スイッチ\nIO0: BOOT スイッチ (内部プルアップ)\n"
                     "書込み: BOOT 押しながら RESET → ROM の USB-Serial/JTAG で idf.py flash"),
     (317.5, 38.1, "UART0 テストパッド (ログ/予備書込み)"),
+    (297.18, 66.04, "J2: 送信機 (FM) 接続用 拡張ヘッダ (3.3V ロジック)\n"
+                    "・I2C: SDA=GPIO8 / SCL=GPIO9 (4.7k プルアップ)\n"
+                    "・FPGA: UART1 TXD=GPIO17 / RXD=GPIO18, RST=GPIO4\n"
+                    "・ADF4002: CLK=GPIO10 / DATA=GPIO11 / LE=GPIO12, MUXOUT=GPIO6\n"
+                    "・TX_EN=GPIO5 (RF 出力 ON/OFF), ADC=GPIO1 (RF レベル)\n"
+                    "・+5V は PTC の後 (USB 給電 0.5A を ESP32 と共用)\n"
+                    "・5V ロジックの送信機はレベル変換が必要"),
+    (297.18, 152.4, "状態 LED: GPIO21 (High で点灯)"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -276,6 +317,11 @@ def lib_symbol_sexpr(key, s):
         g.append(f"(circle (center 0 -2.032) (radius 0.508) {stroke} (fill (type none)))")
         g.append(f"(polyline (pts (xy 1.016 2.54) (xy 1.016 -2.54)) {stroke} (fill (type none)))")
         g.append(f"(polyline (pts (xy 1.016 0) (xy 2.54 0)) {stroke} (fill (type none)))")
+    elif body[0] == "led":
+        g.append(f"(polyline (pts (xy -1.27 -1.016) (xy 1.27 -1.016) (xy 0 1.016) (xy -1.27 -1.016)) {stroke} (fill (type none)))")
+        g.append(f"(polyline (pts (xy -1.27 1.016) (xy 1.27 1.016)) {stroke} (fill (type none)))")
+        g.append(f"(polyline (pts (xy 0 2.54) (xy 0 1.016)) {stroke} (fill (type none)))")
+        g.append(f"(polyline (pts (xy 0 -1.016) (xy 0 -2.54)) {stroke} (fill (type none)))")
     elif body[0] == "tp":
         g.append(f"(circle (center 0 0.762) (radius 0.762) {stroke} (fill (type none)))")
         g.append(f"(polyline (pts (xy 0 0) (xy 0 -0.254)) {stroke} (fill (type none)))")
@@ -371,7 +417,7 @@ def build_schematic():
         f'  (uuid "{ROOT_UUID}")',
         '  (paper "A3")',
         '  (title_block (title "USB-LAN adapter (ESP32-S3-WROOM-1U / USB CDC-NCM)")'
-        ' (date "2026-09-29") (rev "0.1")'
+        ' (date "2026-10-01") (rev "0.2")'
         ' (comment 1 "Initial draft - generated by hardware/tools/gen_schematic.py"))',
         "  (lib_symbols",
     ]

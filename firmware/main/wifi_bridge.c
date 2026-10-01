@@ -12,6 +12,7 @@
 #include "nvs.h"
 #include "sdkconfig.h"
 #include "usb_net.h"
+#include "board_pins.h"
 
 static const char *TAG = "bridge";
 
@@ -58,6 +59,7 @@ static esp_err_t wifi_rx(void *buffer, uint16_t len, void *eb)
 static void set_link(bool up)
 {
     s_connected = up;
+    gpio_set_level(BOARD_LED_STATUS, up);   // Wi-Fi 接続中 (AP モードは SoftAP 起動中) に点灯
     esp_wifi_internal_reg_rxcb(s_ifx, up ? wifi_rx : NULL);
     usb_net_set_link(up);
 }
@@ -224,6 +226,10 @@ esp_err_t wifi_bridge_start(void)
     s_mode = load_mode();
     s_ifx = (s_mode == WIFI_BRIDGE_MODE_AP) ? WIFI_IF_AP : WIFI_IF_STA;
     ESP_ERROR_CHECK(esp_read_mac(s_mac, s_mode == WIFI_BRIDGE_MODE_AP ? ESP_MAC_WIFI_SOFTAP : ESP_MAC_WIFI_STA));
+
+    gpio_reset_pin(BOARD_LED_STATUS);
+    gpio_set_direction(BOARD_LED_STATUS, GPIO_MODE_OUTPUT);
+    gpio_set_level(BOARD_LED_STATUS, 0);
 
     s_reconnect_timer = xTimerCreate("reconnect", pdMS_TO_TICKS(RECONNECT_MIN_MS), pdFALSE, NULL, reconnect_cb);
     ESP_RETURN_ON_FALSE(s_reconnect_timer, ESP_ERR_NO_MEM, TAG, "timer");
