@@ -46,7 +46,7 @@ ESP-IDF 5.5 + esp_tinyusb 1.x。`WIFI_MODE_APSTA`で、STAはIPを持たないUS
 | コマンド | 説明 |
 |---|---|
 | `status` | モード・MAC・接続状態 (AP モードでは接続中の端末一覧) |
-| `mode sta\|ap` | モードを NVS に保存して再起動 |
+| `mode sta` | STA L2ブリッジを維持（旧APブリッジモードは廃止） |
 | `wifi <ssid> [<password>]` | STA: 参加先を設定して再接続 (NVS 保存) |
 | `scan` | STA: 周囲の AP 一覧 |
 | `ap <ssid> <password> [channel]` | AP: SoftAP の設定 (パスワード 8〜63 文字、NVS 保存、即反映) |
@@ -57,4 +57,5 @@ SoftAP はパスワード未設定だと起動しない (オープン AP は作�
 ## 注意
 
 - 技適: 外部アンテナは WROOM-1U の認証に記載された型式のみ。
-- 未検証: この環境では `idf.py build` と実機確認をしていない。
+- ESP-IDF v5.5 / ESP32-S3で`idf.py build`合格（2026-10-01）。`usb_lan.bin`は980,720 bytes、3 MBアプリ領域の69%が空き。
+- 実機でのSPI波形、PLL Lock、RF出力は未確認。確認までは`CONFIG_FM_ALLOW_RF_OUTPUT=n`を維持する。
