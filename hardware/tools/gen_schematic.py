@@ -134,6 +134,13 @@ SYMBOLS = {
         right=[("2", "+5V", "passive"), ("4", "GND", "passive"), ("6", "SCL", "passive"),
                ("8", "CS", "passive"), ("10", "EN", "passive"), ("12", "ADC", "passive"),
                ("14", "MOSI", "passive"), ("16", "GND", "passive")]),
+    # 切替式ループフィルタ / MPX 制御用のヘッダ (rev 0.4)。奇数=左列, 偶数=右列
+    "Conn_02x04": ic_symbol(
+        "Conn_02x04", ref="J", width=12.7,
+        left=[("1", "LF_IN", "passive"), ("3", "LF_PRE", "passive"), ("5", "MPX_MUTE", "passive"),
+              ("7", "+3V3", "passive")],
+        right=[("2", "LF_FB", "passive"), ("4", "MPX_RUN", "passive"), ("6", "ADF_CE", "passive"),
+               ("8", "GND", "passive")]),
     "PWR_FLAG": dict(name="PWR_FLAG", ref="#FLG", body=("flag",),
                      pins=[("1", "pwr", "power_out", 0, 0, 90)],
                      show_names=False, show_numbers=False, power=True),
@@ -186,6 +193,14 @@ PARTS = [
     ("R7", "R", "4.7k", FP["0603R"], 312.42, 96.52, "Yageo", "RC0603FR-074K7L", "I2C SDA プルアップ (送信機側にあれば DNP)"),
     ("R8", "R", "4.7k", FP["0603R"], 322.58, 96.52, "Yageo", "RC0603FR-074K7L", "I2C SCL プルアップ (送信機側にあれば DNP)"),
     ("R9", "R", "1k", FP["0603R"], 312.42, 165.1, "Yageo", "RC0603FR-071KL", "状態 LED 電流制限 (~1.2mA)"),
+    ("J3", "Conn_02x04", "FM LOOP", "Connector_PinHeader_2.54mm:PinHeader_2x04_P2.54mm_Vertical",
+     345.44, 220.98, "-", "2x4 2.54mm ピンヘッダ", "送信機のループフィルタ切替 (TMUX1136 SEL) / MPX ミュート / ADF4002 CE"),
+    ("R10", "R", "10k", FP["0603R"], 302.26, 248.92, "Yageo", "RC0603FR-0710KL", "起動中の既定値 (LF_INPUT_SEL / LF_FB_SEL / MPX_MUTE は High、MPX_RUN / ADF_CE / FM_TX_EN は Low)"),
+    ("R11", "R", "10k", FP["0603R"], 312.42, 248.92, "Yageo", "RC0603FR-0710KL", "起動中の既定値 (LF_INPUT_SEL / LF_FB_SEL / MPX_MUTE は High、MPX_RUN / ADF_CE / FM_TX_EN は Low)"),
+    ("R12", "R", "10k", FP["0603R"], 322.58, 248.92, "Yageo", "RC0603FR-0710KL", "起動中の既定値 (LF_INPUT_SEL / LF_FB_SEL / MPX_MUTE は High、MPX_RUN / ADF_CE / FM_TX_EN は Low)"),
+    ("R13", "R", "10k", FP["0603R"], 332.74, 248.92, "Yageo", "RC0603FR-0710KL", "起動中の既定値 (LF_INPUT_SEL / LF_FB_SEL / MPX_MUTE は High、MPX_RUN / ADF_CE / FM_TX_EN は Low)"),
+    ("R14", "R", "10k", FP["0603R"], 342.9, 248.92, "Yageo", "RC0603FR-0710KL", "起動中の既定値 (LF_INPUT_SEL / LF_FB_SEL / MPX_MUTE は High、MPX_RUN / ADF_CE / FM_TX_EN は Low)"),
+    ("R15", "R", "10k", FP["0603R"], 353.06, 248.92, "Yageo", "RC0603FR-0710KL", "起動中の既定値 (LF_INPUT_SEL / LF_FB_SEL / MPX_MUTE は High、MPX_RUN / ADF_CE / FM_TX_EN は Low)"),
     ("D1", "LED", "LED 緑", "LED_SMD:LED_0603_1608Metric", 312.42, 180.34, "Würth Elektronik", "150060GS75000",
      "状態表示 (GPIO21, High で点灯)"),
     ("#FLG01", "PWR_FLAG", "PWR_FLAG", "", 30.48, 152.4, None, None, None),
@@ -207,11 +222,12 @@ NETS = {
     "VBUS": [("J1", "A4"), ("J1", "A9"), ("J1", "B4"), ("J1", "B9"), ("U2", "5"), ("F1", "1"), ("#FLG01", "1")],
     "+5V": [("F1", "2"), ("C1", "1"), ("U3", "1"), ("U3", "3"), ("J2", "2")],
     "+3V3": [("U3", "5"), ("C2", "1"), ("C3", "1"), ("U1", "2"), ("R3", "1"), ("TP4", "1"),
-             ("J2", "1"), ("R7", "1"), ("R8", "1")],
+             ("J2", "1"), ("R7", "1"), ("R8", "1"), ("J3", "7"), ("R10", "2"), ("R11", "2"), ("R13", "2")],
     "GND": [("J1", "A1"), ("J1", "A12"), ("J1", "B1"), ("J1", "B12"), ("R1", "2"), ("R2", "2"),
             ("R6", "2"), ("C5", "2"), ("U2", "2"), ("C1", "2"), ("U3", "2"), ("C2", "2"), ("C3", "2"),
             ("U1", "1"), ("U1", "40"), ("U1", "41"), ("C6", "2"), ("SW1", "2"), ("SW2", "2"),
-            ("TP3", "1"), ("#FLG02", "1"), ("J2", "3"), ("J2", "4"), ("J2", "16"), ("D1", "1")],
+            ("TP3", "1"), ("#FLG02", "1"), ("J2", "3"), ("J2", "4"), ("J2", "16"), ("D1", "1"),
+            ("J3", "8"), ("R12", "2"), ("R14", "2"), ("R15", "2")],
     "SHIELD": [("J1", "S1"), ("R6", "1"), ("C5", "1"), ("#FLG03", "1")],
     "CC1": [("J1", "A5"), ("R1", "1")],
     "CC2": [("J1", "B5"), ("R2", "1")],
@@ -229,12 +245,19 @@ NETS = {
     "SPI_MISO": [("U1", "21"), ("J2", "7")],                  # GPIO13 (SPI2 MISO, IO_MUX)
     "FPGA_CS": [("U1", "18"), ("J2", "8")],                   # GPIO10 (SPI2 CS0, IO_MUX)
     "FPGA_RST": [("U1", "4"), ("J2", "9")],                   # GPIO4
-    "FM_TX_EN": [("U1", "5"), ("J2", "10")],                  # GPIO5 (RF 出力 ON/OFF)
+    "FM_TX_EN": [("U1", "5"), ("J2", "10"), ("R15", "1")],    # GPIO5 (RF 出力 ON/OFF)。起動中は R15 で Low
     "ADF_MUXOUT": [("U1", "6"), ("J2", "11")],                # GPIO6 (ADF4002 ロック検出, 入力)
     "FM_ADC": [("U1", "39"), ("J2", "12")],                   # GPIO1 (ADC1_CH0)
     "SPI_SCK": [("U1", "20"), ("J2", "13")],                  # GPIO12 (SPI2 SCLK, IO_MUX) FPGA と ADF4002 CLK で共用
     "SPI_MOSI": [("U1", "19"), ("J2", "14")],                 # GPIO11 (SPI2 MOSI, IO_MUX) FPGA と ADF4002 DATA で共用
     "ADF_LE": [("U1", "22"), ("J2", "15")],                   # GPIO14 (ADF4002 LE, 立上りでラッチ)
+    # ---- 切替式ループフィルタ / MPX 制御 J3 (rev 0.4) ----
+    "LF_INPUT_SEL": [("U1", "8"), ("J3", "1"), ("R10", "1")],  # GPIO15: 1 = ACQUIRE
+    "LF_FB_SEL": [("U1", "9"), ("J3", "2"), ("R11", "1")],     # GPIO16: 1 = ACQUIRE
+    "LF_PRECHARGE": [("U1", "10"), ("J3", "3")],               # GPIO17: 1 = プリチャージ
+    "MPX_RUN": [("U1", "11"), ("J3", "4"), ("R12", "1")],      # GPIO18: 1 = MPX を VT 加算器へ
+    "MPX_MUTE": [("U1", "7"), ("J3", "5"), ("R13", "1")],      # GPIO7: 1 = FPGA ミュート
+    "ADF_CE": [("U1", "38"), ("J3", "6"), ("R14", "1")],       # GPIO2: 0 = ADF4002 パワーダウン
     # ---- 状態 LED ----
     "LED_DRV": [("U1", "23"), ("R9", "1")],                   # GPIO21
     "LED_A": [("R9", "2"), ("D1", "2")],
@@ -265,11 +288,15 @@ NOTES = [
     (297.18, 66.04, "J2: 送信機 (FM) 接続用 拡張ヘッダ (3.3V ロジック)\n"
                     "・I2C: SDA=GPIO8 / SCL=GPIO9 (4.7k プルアップ)\n"
                     "・SPI2 (IO_MUX): SCK=GPIO12 / MOSI=GPIO11 / MISO=GPIO13\n"
-                    "・FPGA: CS=GPIO10, RST=GPIO4 / ADF4002: SCK・MOSI 共用, LE=GPIO14, MUXOUT=GPIO6\n"
+                    "・FPGA: CS=GPIO10, RST=GPIO4 (High でリセット) / ADF4002: SCK・MOSI 共用, LE=GPIO14, MUXOUT=GPIO6\n"
                     "・TX_EN=GPIO5 (RF 出力 ON/OFF), ADC=GPIO1 (RF レベル)\n"
                     "・+5V は PTC の後 (USB 給電 0.5A を ESP32 と共用)\n"
                     "・5V ロジックの送信機はレベル変換が必要"),
     (297.18, 152.4, "状態 LED: GPIO21 (High で点灯)"),
+    (297.18, 195.58, "J3 (rev 0.4): 切替式ループフィルタ / MPX 制御 (3.3V ロジック, TMUX1136 の SEL へ)\n"
+                     "・LF_INPUT_SEL=GPIO15 / LF_FB_SEL=GPIO16 (1 = ACQUIRE), LF_PRECHARGE=GPIO17\n"
+                     "・MPX_RUN=GPIO18, MPX_MUTE=GPIO7 (FPGA へ), ADF_CE=GPIO2\n"
+                     "・R10-R15: 起動中 (ピンがハイインピーダンスの間) は ミュート・RF OFF・ACQUIRE・PLL 停止"),
 ]
 
 # ---------------------------------------------------------------------------

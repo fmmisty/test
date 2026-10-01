@@ -8,8 +8,9 @@ D1,1,LED 緑,LED_0603_1608Metric,Würth Elektronik,150060GS75000,"状態表示 (
 F1,1,0.5A hold,Fuse_1206_3216Metric,Bourns,MF-NSMF050-2,PTC 0.5A hold / 1.0A trip
 J1,1,USB-C (USB2.0),USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal,GCT,USB4105-GF-A,USB2.0 専用 16P レセプタクル
 J2,1,FM I/F,PinHeader_2x08_P2.54mm_Vertical,-,2x8 2.54mm ピンヘッダ,送信機接続用 拡張ヘッダ (FPGA: 4 線 SPI・RST / ADF4002: SPI 共用 + LE・MUXOUT / I2C / ADC)
+J3,1,FM LOOP,PinHeader_2x04_P2.54mm_Vertical,-,2x4 2.54mm ピンヘッダ,送信機のループフィルタ切替 (TMUX1136 SEL) / MPX ミュート / ADF4002 CE
 "R1, R2",2,5.1k,R_0603_1608Metric,Yageo,RC0603FR-075K1L,CC1 プルダウン (UFP/Sink)
-R3,1,10k,R_0603_1608Metric,Yageo,RC0603FR-0710KL,EN プルアップ (RC 遅延)
+"R3, R10, R11, R12, R13, R14, R15",7,10k,R_0603_1608Metric,Yageo,RC0603FR-0710KL,EN プルアップ (RC 遅延)
 "R4, R5",2,0,R_0603_1608Metric,Yageo,RC0603JR-070RL,D+ 直列 (予約。波形/EMI を見て 0〜22Ω)
 R6,1,1M,R_0603_1608Metric,Yageo,RC0603FR-071ML,シールド-GND ブリーダ (ケース方針次第で DNP/0Ω)
 "R7, R8",2,4.7k,R_0603_1608Metric,Yageo,RC0603FR-074K7L,I2C SDA プルアップ (送信機側にあれば DNP)
