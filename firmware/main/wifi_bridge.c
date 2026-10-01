@@ -5,7 +5,9 @@
 #include "esp_log.h"
 #include "esp_mac.h"
 #include "esp_event.h"
+#include "esp_netif.h"
 #include "esp_wifi.h"
+#include "esp_wifi_default.h"
 #include "esp_private/wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/timers.h"
@@ -27,6 +29,7 @@ static volatile bool s_connected;       // STA: AP に接続中 / AP: SoftAP 起
 static TimerHandle_t s_reconnect_timer;
 static uint32_t s_backoff_ms = RECONNECT_MIN_MS;
 static bool s_wifi_started;
+static esp_netif_t *s_management_ap;
 
 // ---- USB (host) -> Wi-Fi -------------------------------------------------
 static esp_err_t usb_rx(void *buffer, uint16_t len, void *ctx)
@@ -103,11 +106,9 @@ static void wifi_event_handler(void *arg, esp_event_base_t base, int32_t id, voi
     }
     // -- AP --
     case WIFI_EVENT_AP_START:
-        ESP_LOGI(TAG, "SoftAP started");
-        set_link(true);
+        ESP_LOGI(TAG, "management SoftAP started at 192.168.4.1");
         break;
     case WIFI_EVENT_AP_STOP:
-        set_link(false);
         break;
     case WIFI_EVENT_AP_STACONNECTED: {
         const wifi_event_ap_staconnected_t *ev = data;
@@ -125,26 +126,12 @@ static void wifi_event_handler(void *arg, esp_event_base_t base, int32_t id, voi
 }
 
 // ---- NVS に保存するアプリ設定 (モード / SoftAP) ---------------------------
-static wifi_bridge_mode_t load_mode(void)
-{
-    uint8_t m = 0;
-    nvs_handle_t h;
-    if (nvs_open(NVS_NS, NVS_READONLY, &h) == ESP_OK) {
-        nvs_get_u8(h, "mode", &m);
-        nvs_close(h);
-    }
-    if (m == WIFI_BRIDGE_MODE_STA || m == WIFI_BRIDGE_MODE_AP) {
-        return (wifi_bridge_mode_t)m;
-    }
-#if CONFIG_USB_LAN_WIFI_MODE_AP
-    return WIFI_BRIDGE_MODE_AP;
-#else
-    return WIFI_BRIDGE_MODE_STA;
-#endif
-}
+static wifi_bridge_mode_t load_mode(void) { return WIFI_BRIDGE_MODE_STA; }
 
 esp_err_t wifi_bridge_save_mode(wifi_bridge_mode_t mode)
 {
+    ESP_RETURN_ON_FALSE(mode == WIFI_BRIDGE_MODE_STA, ESP_ERR_NOT_SUPPORTED, TAG,
+                        "AP bridge mode was replaced by management SoftAP");
     nvs_handle_t h;
     ESP_RETURN_ON_ERROR(nvs_open(NVS_NS, NVS_READWRITE, &h), TAG, "nvs_open");
     esp_err_t err = nvs_set_u8(h, "mode", (uint8_t)mode);
@@ -203,9 +190,7 @@ esp_err_t wifi_bridge_set_ap(const char *ssid, const char *password, uint8_t cha
     nvs_close(h);
     ESP_RETURN_ON_ERROR(err, TAG, "nvs write");
 
-    if (s_mode != WIFI_BRIDGE_MODE_AP) {
-        return ESP_OK;   // 次に AP モードで起動したときに使われる
-    }
+    if (!s_wifi_started) return ESP_OK;
     wifi_config_t wc;
     build_ap_config(&wc);
     if (!s_wifi_started) {
@@ -224,8 +209,8 @@ esp_err_t wifi_bridge_set_ap(const char *ssid, const char *password, uint8_t cha
 esp_err_t wifi_bridge_start(void)
 {
     s_mode = load_mode();
-    s_ifx = (s_mode == WIFI_BRIDGE_MODE_AP) ? WIFI_IF_AP : WIFI_IF_STA;
-    ESP_ERROR_CHECK(esp_read_mac(s_mac, s_mode == WIFI_BRIDGE_MODE_AP ? ESP_MAC_WIFI_SOFTAP : ESP_MAC_WIFI_STA));
+    s_ifx = WIFI_IF_STA;
+    ESP_ERROR_CHECK(esp_read_mac(s_mac, ESP_MAC_WIFI_STA));
 
     gpio_reset_pin(BOARD_LED_STATUS);
     gpio_set_direction(BOARD_LED_STATUS, GPIO_MODE_OUTPUT);
@@ -234,26 +219,21 @@ esp_err_t wifi_bridge_start(void)
     s_reconnect_timer = xTimerCreate("reconnect", pdMS_TO_TICKS(RECONNECT_MIN_MS), pdFALSE, NULL, reconnect_cb);
     ESP_RETURN_ON_FALSE(s_reconnect_timer, ESP_ERR_NO_MEM, TAG, "timer");
 
-    // ESP 側に IP を持たない純 L2 ブリッジなので esp_netif のインタフェースは作らない
+    // STA is the raw L2 bridge. Only AP is attached to esp-netif/IP.
+    s_management_ap = esp_netif_create_default_wifi_ap();
+    ESP_RETURN_ON_FALSE(s_management_ap, ESP_ERR_NO_MEM, TAG, "management AP netif");
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, wifi_event_handler, NULL));
     ESP_ERROR_CHECK(esp_wifi_set_country_code(CONFIG_USB_LAN_WIFI_COUNTRY, false));
 
-    if (s_mode == WIFI_BRIDGE_MODE_AP) {
-        wifi_config_t wc;
-        build_ap_config(&wc);
-        if (strlen((char *)wc.ap.password) < 8) {
-            // 無防備なオープン AP は作らない
-            ESP_LOGE(TAG, "SoftAP password is not set (8+ chars). Use console: ap <ssid> <password> [channel]");
-            ESP_ERROR_CHECK(usb_net_init(s_mac, usb_rx, wifi_rx_free));
-            return ESP_OK;
-        }
-        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-        ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wc));
-        ESP_LOGI(TAG, "mode AP: SSID \"%s\" ch %d", (char *)wc.ap.ssid, wc.ap.channel);
-    } else {
-        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    {
+        wifi_config_t ap;
+        build_ap_config(&ap);
+        ESP_RETURN_ON_FALSE(strlen((char *)ap.ap.password) >= 8, ESP_ERR_INVALID_STATE,
+                            TAG, "management AP requires WPA2 password (8+ chars)");
+        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
+        ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &ap));
         wifi_config_t wc = {0};
         esp_wifi_get_config(WIFI_IF_STA, &wc);  // Wi-Fi ドライバが NVS に保存している設定
         if (wc.sta.ssid[0] == '\0' && CONFIG_USB_LAN_WIFI_SSID[0] != '\0') {
@@ -265,7 +245,7 @@ esp_err_t wifi_bridge_start(void)
         if (wc.sta.ssid[0] == '\0') {
             ESP_LOGW(TAG, "No Wi-Fi credentials. Use console: wifi <ssid> <password>");
         }
-        ESP_LOGI(TAG, "mode STA");
+        ESP_LOGI(TAG, "mode APSTA: STA=L2 bridge, AP=management IP");
     }
     // 省電力はレイテンシとスループットを悪化させるので無効
     ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));

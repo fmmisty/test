@@ -17,10 +17,7 @@
  *   スマホ <--Wi-Fi--> [ESP32 SoftAP ==(L2)== USB] <--USB--> ホスト
  *   ホストが AP の「中の人」として IP を持ち、DHCP サーバを動かす (host/linux/README.md 参照)。
  */
-typedef enum {
-    WIFI_BRIDGE_MODE_STA = 1,
-    WIFI_BRIDGE_MODE_AP = 2,
-} wifi_bridge_mode_t;
+typedef enum { WIFI_BRIDGE_MODE_STA = 1 } wifi_bridge_mode_t;
 
 esp_err_t wifi_bridge_start(void);
 

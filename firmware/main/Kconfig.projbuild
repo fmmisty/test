@@ -1,17 +1,5 @@
 menu "USB-LAN adapter"
 
-    choice USB_LAN_WIFI_MODE
-        prompt "Default Wi-Fi mode"
-        default USB_LAN_WIFI_MODE_STA
-        help
-            起動時の Wi-Fi モード。UART コンソールの `mode sta|ap` で NVS に保存した値が優先される。
-
-        config USB_LAN_WIFI_MODE_STA
-            bool "Station (join an existing Wi-Fi network)"
-        config USB_LAN_WIFI_MODE_AP
-            bool "Access point (phones connect to the ESP32 directly)"
-    endchoice
-
     menu "Station"
         config USB_LAN_WIFI_SSID
             string "Default Wi-Fi SSID"
@@ -32,7 +20,7 @@ menu "USB-LAN adapter"
 
         config USB_LAN_AP_PASSWORD
             string "SoftAP password (8-63 chars)"
-            default ""
+            default "change-this-ap-password"
             help
                 空または 8 文字未満のときは SoftAP を起動しない (オープン AP は作らない)。
                 コンソールの `ap <ssid> <password> [channel]` でも設定できる。
@@ -60,4 +48,16 @@ menu "USB-LAN adapter"
         help
             ホストが USB を読んでいないときに Wi-Fi 受信バッファを保持する最大時間。
 
+endmenu
+
+menu "FM transmitter control"
+ config FM_WEB_USER
+  string "Web login user"
+  default "admin"
+ config FM_WEB_PASSWORD
+  string "Web login password"
+  default "change-this-password"
+ config FM_ALLOW_RF_OUTPUT
+  bool "Allow RF output (ONLY after hardware SPI/PLL verification)"
+  default n
 endmenu

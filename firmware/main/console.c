@@ -42,11 +42,8 @@ static int cmd_mode(int argc, char **argv)
     wifi_bridge_mode_t m;
     if (argc == 2 && strcmp(argv[1], "sta") == 0) {
         m = WIFI_BRIDGE_MODE_STA;
-    } else if (argc == 2 && strcmp(argv[1], "ap") == 0) {
-        m = WIFI_BRIDGE_MODE_AP;
     } else {
-        printf("usage: mode sta|ap   (current: %s)\n",
-               wifi_bridge_get_mode() == WIFI_BRIDGE_MODE_AP ? "ap" : "sta");
+        printf("usage: mode sta   (AP bridge mode was removed)\n");
         return 1;
     }
     esp_err_t err = wifi_bridge_save_mode(m);
@@ -95,11 +92,10 @@ static int cmd_status(int argc, char **argv)
 {
     uint8_t mac[6];
     wifi_bridge_get_mac(mac);
-    bool ap = wifi_bridge_get_mode() == WIFI_BRIDGE_MODE_AP;
-    printf("Mode     : %s\n", ap ? "AP" : "STA");
+    printf("Mode     : APSTA (STA=L2 bridge, AP=management)\n");
     printf("Host MAC : " MACSTR "\n", MAC2STR(mac));
 
-    if (ap) {
+    if (false) {
         wifi_config_t wc;
         wifi_sta_list_t list;
         printf("SoftAP   : %s\n", wifi_bridge_is_connected() ? "running" : "stopped");

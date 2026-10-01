@@ -1,6 +1,17 @@
 # firmware — ESP32-S3 USB ⇔ Wi-Fi L2 ブリッジ
 
-ESP-IDF 5.1 以降 + esp_tinyusb 1.x。ESP32 は IP を持たず、Wi-Fi と USB の間で Ethernet フレームを中継する。
+ESP-IDF 5.5 + esp_tinyusb 1.x。`WIFI_MODE_APSTA`で、STAはIPを持たないUSB L2ブリッジ、SoftAPだけがESP-NETIF/DHCP/HTTPを持つ。管理画面は `http://192.168.4.1/`。
+
+## FM送信機管理
+
+- `board_pins.h` rev 0.3のSPI2配線を使用する。FPGAはMode 0/16 bit/1 MHz、ADF4002は24 bitでSCK/MOSIを共用する。
+- FPGA通信中はADF_LEをLowに保持する。
+- 周波数は76.0～108.0 MHz、100 kHz刻みだけ受理する。R=100、PFD=100 kHz、N=760～1080。
+- 周波数変更はRF OFF・FPGA mute → ADF設定 → Lock確認 → N/Kv/KIDX/COMP設定の順。
+- PLL Lock喪失は10 ms周期の独立安全タスクで検出し、FM_TX_ENをLowにする。
+- 設定は明示的な保存操作でNVSへ保存する。RF ON状態は保存・復元しない。
+- SoftAPはWPA2必須、Web APIはHTTP Basic認証必須。`menuconfig`でSSID/AP passwordとWeb user/passwordを必ず変更する。
+- `CONFIG_FM_ALLOW_RF_OUTPUT`は既定OFF。実機でSPIとPLL Lockを確認するまでWebからRF ONは拒否される。
 
 ## ビルドの組合せ
 
