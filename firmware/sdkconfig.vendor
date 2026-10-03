@@ -1,0 +1,14 @@
+# 独自ベンダークラス (host/linux の自作ドライバ用) でビルドするときの上書き設定:
+#   idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.vendor" build
+# (切替時は sdkconfig を消してから)
+
+# CDC-NCM を止めてベンダーインタフェースを 1 本だけ出す
+CONFIG_TINYUSB_NET_MODE_NONE=y
+# CONFIG_TINYUSB_NET_MODE_NCM is not set
+CONFIG_TINYUSB_VENDOR_COUNT=1
+
+# 開発用 VID/PID (pid.codes テスト用。protocol/usblan_proto.h の既定値と合わせる)
+# CONFIG_TINYUSB_DESC_USE_ESPRESSIF_VID is not set
+CONFIG_TINYUSB_DESC_CUSTOM_VID=0x1209
+# CONFIG_TINYUSB_DESC_USE_DEFAULT_PID is not set
+CONFIG_TINYUSB_DESC_CUSTOM_PID=0x0001

@@ -1,0 +1,63 @@
+menu "USB-LAN adapter"
+
+    menu "Station"
+        config USB_LAN_WIFI_SSID
+            string "Default Wi-Fi SSID"
+            default ""
+            help
+                NVS に Wi-Fi 設定が無い場合に使う SSID。空なら UART コンソールの
+                `wifi <ssid> <password>` コマンドで設定するまで接続しない。
+
+        config USB_LAN_WIFI_PASSWORD
+            string "Default Wi-Fi password"
+            default ""
+    endmenu
+
+    menu "Access point"
+        config USB_LAN_AP_SSID
+            string "SoftAP SSID"
+            default "usb-lan"
+
+        config USB_LAN_AP_PASSWORD
+            string "SoftAP password (8-63 chars)"
+            default "change-this-ap-password"
+            help
+                空または 8 文字未満のときは SoftAP を起動しない (オープン AP は作らない)。
+                コンソールの `ap <ssid> <password> [channel]` でも設定できる。
+
+        config USB_LAN_AP_CHANNEL
+            int "SoftAP channel"
+            range 1 13
+            default 6
+
+        config USB_LAN_AP_MAX_CONN
+            int "Max stations"
+            range 1 10
+            default 4
+    endmenu
+
+    config USB_LAN_WIFI_COUNTRY
+        string "Wi-Fi country code"
+        default "JP"
+        help
+            使用するチャネル・送信電力の規制範囲。日本は "JP" (ch1-13)。
+
+    config USB_LAN_TX_TIMEOUT_MS
+        int "Wi-Fi -> USB send timeout (ms)"
+        default 100
+        help
+            ホストが USB を読んでいないときに Wi-Fi 受信バッファを保持する最大時間。
+
+endmenu
+
+menu "FM transmitter control"
+ config FM_WEB_USER
+  string "Web login user"
+  default "admin"
+ config FM_WEB_PASSWORD
+  string "Web login password"
+  default "change-this-password"
+ config FM_ALLOW_RF_OUTPUT
+  bool "Allow RF output (ONLY after hardware SPI/PLL verification)"
+  default n
+endmenu
