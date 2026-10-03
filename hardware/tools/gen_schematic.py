@@ -114,13 +114,25 @@ SYMBOLS = {
         left=[("1", "I/O1", "passive"), ("3", "I/O2", "passive")],
         right=[("6", "I/O1", "passive"), ("4", "I/O2", "passive")],
         top=[("5", "VBUS", "passive")], bottom=[("2", "GND", "passive")]),
-    "AP2112K-3.3": ic_symbol(
-        "AP2112K-3.3", width=10.16,
-        left=[("1", "VIN", "power_in"), ("3", "EN", "input")],
-        right=[("5", "VOUT", "power_out"), ("4", "NC", "no_connect")],
-        bottom=[("2", "GND", "power_in")]),
+    "LTC4365CTS8": ic_symbol(
+        "LTC4365CTS8", width=12.7,
+        left=[("1", "VIN", "power_in"), ("2", "UV", "input"), ("3", "OV", "input"), ("4", "GND", "power_in")],
+        right=[("8", "GATE", "output"), ("7", "VOUT", "input"), ("6", "FAULT", "open_collector"), ("5", "SHDN", "input")]),
+    "TPS62162DSG": ic_symbol(
+        "TPS62162DSG", width=12.7,
+        left=[("2", "VIN", "power_in"), ("3", "EN", "input"), ("5", "FB", "input"), ("4", "AGND", "power_in")],
+        right=[("7", "SW", "power_out"), ("6", "VOS", "input"), ("8", "PG", "open_collector"), ("1", "PGND", "power_in")],
+        bottom=[("9", "EP", "power_in")]),
+    "NMOS": ic_symbol(
+        "NMOS", ref="Q", width=10.16,
+        left=[("1", "G", "input"), ("2", "S", "passive")],
+        right=[("3", "D", "passive")]),
+    "BarrelJack_2Pin": ic_symbol(
+        "BarrelJack_2Pin", ref="J", width=10.16,
+        left=[("1", "+", "passive"), ("2", "-", "passive")]),
     "R": two_pin("R", "R", "res"),
     "C": two_pin("C", "C", "cap"),
+    "L": two_pin("L", "L", "fuse"),
     "Polyfuse": two_pin("Polyfuse", "F", "fuse"),
     "SW_Push": two_pin("SW_Push", "SW", "sw"),
     "TestPoint": one_pin("TestPoint", "TP"),
@@ -167,13 +179,36 @@ PARTS = [
      114.3, 71.12, "STMicroelectronics", "USBLC6-2SC6", "USB D+/D- ESD 保護 (コネクタ直近)"),
     ("R4", "R", "0", FP["0603R"], 142.24, 63.5, "Yageo", "RC0603JR-070RL", "D+ 直列 (予約。波形/EMI を見て 0〜22Ω)"),
     ("R5", "R", "0", FP["0603R"], 152.4, 63.5, "Yageo", "RC0603JR-070RL", "D- 直列 (予約。波形/EMI を見て 0〜22Ω)"),
-    ("F1", "Polyfuse", "0.5A hold", "Fuse:Fuse_1206_3216Metric",
-     60.96, 152.4, "Bourns", "MF-NSMF050-2", "PTC 0.5A hold / 1.0A trip"),
-    ("C1", "C", "4.7uF 25V", FP["0805C"], 81.28, 152.4, "Murata", "GRM21BR61E475KA12L", "LDO 入力 (VBUS 総容量 ≤10uF を守る)"),
-    ("U3", "AP2112K-3.3", "AP2112K-3.3", "Package_TO_SOT_SMD:SOT-23-5",
-     104.14, 152.4, "Diodes Inc.", "AP2112K-3.3TRG1", "3.3V 600mA LDO"),
-    ("C2", "C", "22uF 10V", FP["0805C"], 132.08, 152.4, "Murata", "GRM21BR61A226ME44L", "LDO 出力 / モジュール 3V3 バルク"),
-    ("C3", "C", "0.1uF", FP["0603C"], 142.24, 152.4, "Murata", "GRM188R71H104KA93D", "モジュール 3V3 ピン直近"),
+    ("C1", "C", "4.7uF 25V", FP["0805C"], 81.28, 152.4, "Murata", "GRM21BR61E475KA12L", "USB VBUS local bulk (USB-C is data/service only; not tied to main 5V)"),
+    ("J4", "BarrelJack_2Pin", "5V DC IN center-positive", "", 45.72, 152.4, "-", "-", "Main supply input, 5V/1A adapter"),
+    ("U3", "LTC4365CTS8", "LTC4365CTS8", "Package_TO_SOT_SMD:TSOT-23-8",
+     104.14, 152.4, "Analog Devices", "LTC4365CTS8#TRMPBF", "UV/OV/reverse supply protection controller"),
+    ("Q1", "NMOS", "AO3400A", "Package_TO_SOT_SMD:SOT-23", 137.16, 144.78, "Alpha & Omega Semiconductor", "AO3400A", "Back-to-back protection MOSFET, input side"),
+    ("Q2", "NMOS", "AO3400A", "Package_TO_SOT_SMD:SOT-23", 157.48, 144.78, "Alpha & Omega Semiconductor", "AO3400A", "Back-to-back protection MOSFET, output side"),
+    ("F1", "Polyfuse", "0.75A hold", "Fuse:Fuse_1206_3216Metric",
+     182.88, 152.4, "Littelfuse", "1206L075SLYR", "PTC after MOSFET protection; 0.75A hold class"),
+    ("U4", "TPS62162DSG", "TPS62162 3.3V", "Package_DFN_QFN:WSON-8-1EP_2x2mm_P0.5mm",
+     223.52, 152.4, "Texas Instruments", "TPS62162DSGR", "3.3V fixed, 1A synchronous buck"),
+    ("L1", "L", "2.2uH Isat>=1.5A DCR<=0.15R", "Inductor_SMD:L_1210_3225Metric",
+     251.46, 152.4, "-", "-", "TPS62162 output inductor"),
+    ("R16", "R", "1.65M 1%", FP["0603R"], 71.12, 175.26, "Yageo", "-", "LTC4365 UV/OV ladder: DC_IN to UV"),
+    ("R17", "R", "54.9k 1%", FP["0603R"], 81.28, 175.26, "Yageo", "-", "LTC4365 UV/OV ladder: UV to OV"),
+    ("R18", "R", "162k 1%", FP["0603R"], 91.44, 175.26, "Yageo", "-", "LTC4365 UV/OV ladder: OV to GND"),
+    ("R19", "R", "5.1k", FP["0603R"], 119.38, 175.26, "Yageo", "-", "Rev.E gate slew network series resistor"),
+    ("C7", "C", "4.7nF C0G 50V", FP["0603C"], 129.54, 175.26, "Murata", "-", "Rev.E gate slew network capacitor"),
+    ("R20", "R", "10R", FP["0603R"], 137.16, 165.1, "Yageo", "-", "GATE_BUS to Q1 gate"),
+    ("R21", "R", "10R", FP["0603R"], 157.48, 165.1, "Yageo", "-", "GATE_BUS to Q2 gate"),
+    ("R22", "R", "100k", FP["0603R"], 104.14, 175.26, "Yageo", "-", "LTC4365 SHDN pull-up to DC_IN"),
+    ("R23", "R", "100k", FP["0603R"], 203.2, 175.26, "Yageo", "-", "LTC4365 FAULT pull-up to +3V3"),
+    ("R24", "R", "100k", FP["0603R"], 233.68, 175.26, "Yageo", "-", "TPS62162 PG pull-up to +3V3"),
+    ("C8", "C", "10uF 10V", FP["0805C"], 213.36, 175.26, "Murata", "-", "TPS62162 input bulk"),
+    ("C9", "C", "0.1uF 25V", FP["0603C"], 223.52, 175.26, "Murata", "-", "TPS62162 input HF bypass"),
+    ("C10", "C", "22uF 10V", FP["0805C"], 251.46, 175.26, "Murata", "-", "TPS62162 output bulk"),
+    ("C11", "C", "0.1uF 10V", FP["0603C"], 261.62, 175.26, "Murata", "-", "TPS62162 output HF bypass"),
+    ("C12", "C", "100uF low-ESR", "Capacitor_SMD:CP_Elec_6.3x5.8", 271.78, 175.26, "-", "-", "ESP32 Wi-Fi transient bulk"),
+    ("C13", "C", "10uF X7R", FP["0805C"], 281.94, 175.26, "Murata", "-", "ESP32 local bulk"),
+    ("C14", "C", "0.1uF X7R", FP["0603C"], 292.1, 175.26, "Murata", "-", "ESP32 local HF bypass"),
+    ("TP7", "TestPoint", "LTC_FAULT", "TestPoint:TestPoint_Pad_D1.5mm", 203.2, 185.42, "-", "-", "LTC4365 fault monitor"),
     ("U1", "ESP32-S3-WROOM-1U", "ESP32-S3-WROOM-1U-N8R2", "RF_Module:ESP32-S3-WROOM-1U",
      254.0, 106.68, "Espressif", "ESP32-S3-WROOM-1U-N8R2", "外部アンテナ版 (モジュール上に U.FL 実装済み)"),
     ("R3", "R", "10k", FP["0603R"], 190.5, 170.18, "Yageo", "RC0603FR-0710KL", "EN プルアップ (RC 遅延)"),
@@ -219,12 +254,30 @@ OFFBOARD = [
 
 # ネット: net -> [(ref, pin), ...]
 NETS = {
-    "VBUS": [("J1", "A4"), ("J1", "A9"), ("J1", "B4"), ("J1", "B9"), ("U2", "5"), ("F1", "1"), ("#FLG01", "1")],
-    "+5V": [("F1", "2"), ("C1", "1"), ("U3", "1"), ("U3", "3"), ("J2", "2")],
-    "+3V3": [("U3", "5"), ("C2", "1"), ("C3", "1"), ("U1", "2"), ("R3", "1"), ("TP4", "1"),
+    "USB_VBUS": [("J1", "A4"), ("J1", "A9"), ("J1", "B4"), ("J1", "B9"), ("U2", "5"), ("C1", "1"), ("#FLG01", "1")],
+    "DC_IN_5V": [("J4", "1"), ("U3", "1"), ("R16", "1"), ("R22", "1"), ("Q1", "3")],
+    "UV_SET": [("U3", "2"), ("R16", "2"), ("R17", "1")],
+    "OV_SET": [("U3", "3"), ("R17", "2"), ("R18", "1")],
+    "FET_SOURCE_COMMON": [("Q1", "2"), ("Q2", "2")],
+    "PROTECTED_5V": [("Q2", "3"), ("U3", "7"), ("F1", "1")],
+    "+5V": [("F1", "2"), ("U4", "2"), ("U4", "3"), ("C8", "1"), ("C9", "1"), ("J2", "2")],
+    "GATE_BUS": [("U3", "8"), ("R19", "1"), ("R20", "1"), ("R21", "1")],
+    "GATE_RC": [("R19", "2"), ("C7", "1")],
+    "Q1_GATE": [("R20", "2"), ("Q1", "1")],
+    "Q2_GATE": [("R21", "2"), ("Q2", "1")],
+    "LTC_SHDN": [("U3", "5"), ("R22", "2")],
+    "LTC_FAULT": [("U3", "6"), ("R23", "1"), ("TP7", "1")],
+    "SW_3V3": [("U4", "7"), ("L1", "1")],
+    "+3V3": [("L1", "2"), ("U4", "6"), ("U4", "8"), ("R23", "2"), ("R24", "1"),
+             ("C10", "1"), ("C11", "1"), ("C12", "1"), ("C13", "1"), ("C14", "1"),
+             ("U1", "2"), ("R3", "1"), ("TP4", "1"),
              ("J2", "1"), ("R7", "1"), ("R8", "1"), ("J3", "7"), ("R10", "2"), ("R11", "2"), ("R13", "2")],
-    "GND": [("J1", "A1"), ("J1", "A12"), ("J1", "B1"), ("J1", "B12"), ("R1", "2"), ("R2", "2"),
-            ("R6", "2"), ("C5", "2"), ("U2", "2"), ("C1", "2"), ("U3", "2"), ("C2", "2"), ("C3", "2"),
+    "TPS_PG": [("U4", "8"), ("R24", "2")],
+    "GND": [("J1", "A1"), ("J1", "A12"), ("J1", "B1"), ("J1", "B12"), ("J4", "2"),
+            ("R1", "2"), ("R2", "2"), ("R6", "2"), ("C5", "2"), ("U2", "2"), ("C1", "2"),
+            ("U3", "4"), ("R18", "2"), ("C7", "2"),
+            ("U4", "1"), ("U4", "4"), ("U4", "5"), ("U4", "9"),
+            ("C8", "2"), ("C9", "2"), ("C10", "2"), ("C11", "2"), ("C12", "2"), ("C13", "2"), ("C14", "2"),
             ("U1", "1"), ("U1", "40"), ("U1", "41"), ("C6", "2"), ("SW1", "2"), ("SW2", "2"),
             ("TP3", "1"), ("#FLG02", "1"), ("J2", "3"), ("J2", "4"), ("J2", "16"), ("D1", "1"),
             ("J3", "8"), ("R12", "2"), ("R14", "2"), ("R15", "2")],
@@ -263,19 +316,20 @@ NETS = {
     "LED_A": [("R9", "2"), ("D1", "2")],
 }
 # 意図的に未接続とするピン (no_connect マーカーを置く)
-NC_EXPLICIT = [("J1", "A8"), ("J1", "B8"), ("U3", "4")]
+NC_EXPLICIT = [("J1", "A8"), ("J1", "B8")]
 
 # ---------------------------------------------------------------------------
 # テキスト注記
 # ---------------------------------------------------------------------------
 NOTES = [
     (25.4, 22.86, "USB-C 入力 / ESD 保護\n"
-                  "・CC1/CC2 は各 5.1k で GND (UFP/Sink, 最大 5V 取得のみ)\n"
+                  "・CC1/CC2 は各 5.1k で GND (UFP/Sink)。USB-Cは通信/保守専用で本体電源には使わない\n"
                   "・USBLC6-2SC6 はコネクタ直近に配置。D+/D- は 90Ω 差動、スタブ無しで A/B 面を合流\n"
                   "・R4/R5 は直列抵抗の予約パッド (初期 0Ω)"),
-    (25.4, 124.46, "電源: VBUS → PTC(0.5A) → AP2112K-3.3\n"
-                   "・Wi-Fi TX ピーク ~350mA: LDO 損失 (5-3.3)x0.35 ≒ 0.6W → GND ベタで放熱\n"
-                   "・VBUS 側の総容量は USB 規格上 10uF 以下 (C1=4.7uF)"),
+    (25.4, 124.46, "電源 Rev.E: 5V/1A DC IN → LTC4365 → AO3400A×2 back-to-back → PTC → TPS62162 3.3V\n"
+                   "・UV/OV: 1.65M / 54.9k / 162k の3抵抗ラダーで約4.30V / 5.76V\n"
+                   "・GATE_BUS: 5.1k + 4.7nF(C0G)直列 to GND、各MOSFET gateへ10Ω\n"
+                   "・USB-C VBUSは通信/ESD参照のみ。本体5V電源とは接続しない"),
     (25.4, 106.68, "シールド: 金属ケースへの接続方針で R6/C5 を調整\n(ケース=FG なら 1M//4.7nF、直結なら R6=0Ω)"),
     (180.34, 22.86, "ESP32-S3-WROOM-1U\n"
                     "・GPIO19/20 は内蔵 USB-OTG PHY に直結 (TinyUSB CDC-NCM)\n"
@@ -290,8 +344,8 @@ NOTES = [
                     "・SPI2 (IO_MUX): SCK=GPIO12 / MOSI=GPIO11 / MISO=GPIO13\n"
                     "・FPGA: CS=GPIO10, RST=GPIO4 (High でリセット) / ADF4002: SCK・MOSI 共用, LE=GPIO14, MUXOUT=GPIO6\n"
                     "・TX_EN=GPIO5 (RF 出力 ON/OFF), ADC=GPIO1 (RF レベル)\n"
-                    "・+5V は PTC の後 (USB 給電 0.5A を ESP32 と共用)\n"
-                    "・5V ロジックの送信機はレベル変換が必要"),
+                    "・+5V はLTC4365保護 + PTC後の5V DCアダプタ系\n"
+                    "・USB-C VBUSとは分離。5Vロジックの送信機はレベル変換が必要"),
     (297.18, 152.4, "状態 LED: GPIO21 (High で点灯)"),
     (297.18, 195.58, "J3 (rev 0.4): 切替式ループフィルタ / MPX 制御 (3.3V ロジック, TMUX1136 の SEL へ)\n"
                      "・LF_INPUT_SEL=GPIO15 / LF_FB_SEL=GPIO16 (1 = ACQUIRE), LF_PRECHARGE=GPIO17\n"
