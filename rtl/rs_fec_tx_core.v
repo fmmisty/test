@@ -194,20 +194,18 @@ always @(posedge clk) begin  // BRAM化のため同期リセット(rst_nは起�
         end
 
         TX_OUT: begin
-            // リンクダウン中は送出を一時停止するのみ(破棄しない)。
-            // 送信データはまだLANに出ていないため、再接続後は
-            // 停止した位置からそのまま再開してよい。
-            if (tx_out_ready) begin
-                tx_out_valid <= 1;
-                tx_out_data  <= tx_obuf[(tx_out_cnt % INTERLEAVE)*N + (tx_out_cnt / INTERLEAVE)];
-                if (tx_out_cnt == DN - 1) begin
-                    tx_out_cnt <= 0;
-                    tx_state   <= TX_COLLECT;
+            // AXI4-Stream準拠: 出力レジスタが空(!valid)か今clk受理(valid&&ready)の時だけ次を載せる。
+            // validは受理されるまで下げない。最終バイト受理でCOLLECTへ戻る。
+            if (!tx_out_valid || tx_out_ready) begin
+                if (tx_out_cnt < DN) begin
+                    tx_out_valid <= 1;
+                    tx_out_data  <= tx_obuf[(tx_out_cnt % INTERLEAVE)*N + (tx_out_cnt / INTERLEAVE)];
+                    tx_out_cnt   <= tx_out_cnt + 1;
                 end else begin
-                    tx_out_cnt <= tx_out_cnt + 1;
+                    tx_out_valid <= 0;
+                    tx_out_cnt   <= 0;
+                    tx_state     <= TX_COLLECT;
                 end
-            end else begin
-                tx_out_valid <= 0;
             end
         end
         endcase
