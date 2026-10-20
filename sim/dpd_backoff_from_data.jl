@@ -28,8 +28,8 @@ using LinearAlgebra, Statistics, Printf, DelimitedFiles, FFTW
 const FS_HZ      = 2.0e6        # ★ I/Q のサンプリング周波数 [Hz]（観測帯域=信号の3〜5倍を推奨）
 const PAVG_W     = 5.0          # ★ 平均出力の目標 [W]（今回 5W）
 # 目標スペクトルマスク: (オフセット[Hz], 上限[dBc]) を必要なだけ並べる
-const MASK       = [(250.0e3, -40.0), (750.0e3, -48.0)]   # ← 160m 運用の規定に合わせて書換え
-const MEAS_HALF  = 20.0e3       # 肩を測る窓の半幅 [Hz]
+const MASK       = [(50.0e3, -37.0), (150.0e3, -48.0)]   # 160m 実マスク: ±50k −37dBc / ±150k −48dBc
+const MEAS_HALF  = 8.0e3        # 肩を測る窓の半幅 [Hz]（±50k/±150k の近接マスク向け）
 # モデル次数（実務の出発点: 7次/深さ5）。tap は包絡線メモリのサンプル間隔。
 const ORDER=7; const MEMORY=5; const TAP=1
 # =====================================================================
