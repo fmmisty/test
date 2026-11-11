@@ -24,6 +24,14 @@ consequence in hardware, and a concrete fix.
 | Skill | `vhdl-review` | Full review of the VHDL files, entities, or design you point it at |
 | Command | `/fmmisty-vhdl-review:vhdl-review-diff` | Review only the VHDL changed on the current git branch |
 
+## Install
+
+In Claude Code:
+
+```
+/plugin install fmmisty-vhdl-review --marketplace fmmisty/test
+```
+
 ## Usage
 
 Ask Claude in plain language, for example:

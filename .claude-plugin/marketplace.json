@@ -1,0 +1,17 @@
+{
+  "name": "fmmisty-plugins",
+  "owner": {
+    "name": "fmmisty",
+    "url": "https://github.com/fmmisty"
+  },
+  "metadata": {
+    "description": "Claude plugins by fmmisty"
+  },
+  "plugins": [
+    {
+      "name": "fmmisty-vhdl-review",
+      "source": "./fmmisty-vhdl-review",
+      "description": "Reviews VHDL and FPGA designs for synthesizability, clock-domain crossings, reset strategy, numeric correctness, and naming."
+    }
+  ]
+}
