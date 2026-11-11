@@ -1,0 +1,14 @@
+{
+  "name": "fmmisty-vhdl-review",
+  "displayName": "VHDL Review",
+  "version": "0.1.0",
+  "description": "Reviews VHDL and FPGA designs for synthesizability, clock-domain crossings, reset strategy, numeric correctness, and naming.",
+  "author": {
+    "name": "fmmisty",
+    "url": "https://github.com/fmmisty"
+  },
+  "homepage": "https://github.com/fmmisty/test/tree/main/fmmisty-vhdl-review",
+  "repository": "https://github.com/fmmisty/test",
+  "license": "MIT",
+  "keywords": ["vhdl", "fpga", "hdl", "code-review", "rtl"]
+}
