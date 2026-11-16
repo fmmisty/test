@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 440" font-family="IBM Plex Sans, system-ui, sans-serif">
+<defs>
+<marker id="a" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L6.5,3 L0,6 Z" fill="#5a6b6a"/></marker>
+<marker id="ac" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L6.5,3 L0,6 Z" fill="#0e7c86"/></marker>
+</defs>
+<rect x="0" y="0" width="760" height="440" fill="#ffffff"/>
+<text x="20" y="28" font-size="15" font-weight="700" fill="#15201f">図A　PS/PL 機能分担とデータ経路</text>
+
+<!-- RF/信号経路 (上段) -->
+<text x="20" y="58" font-size="11.5" font-weight="600" fill="#586867">信号経路</text>
+<g font-size="11" fill="#15201f">
+  <rect x="20"  y="68" width="92" height="40" rx="7" fill="#eef2f2" stroke="#c2cbca"/><text x="66" y="92" text-anchor="middle">送信IQ</text>
+  <rect x="128" y="68" width="110" height="40" rx="7" fill="#0e7c8618" stroke="#0e7c86"/><text x="183" y="86" text-anchor="middle" fill="#0b5b63">PL: DPD演算</text><text x="183" y="100" text-anchor="middle" font-size="9" fill="#586867">(二重バンク)</text>
+  <rect x="254" y="68" width="70" height="40" rx="7" fill="#eef2f2" stroke="#c2cbca"/><text x="289" y="92" text-anchor="middle">DAC/UP</text>
+  <rect x="340" y="68" width="70" height="40" rx="7" fill="#eef2f2" stroke="#c2cbca"/><text x="375" y="92" text-anchor="middle">PA</text>
+  <circle cx="452" cy="88" r="4" fill="#c2cbca"/><text x="452" y="62" text-anchor="middle" font-size="9" fill="#586867">カプラ</text>
+  <rect x="486" y="68" width="78" height="40" rx="7" fill="#eef2f2" stroke="#c2cbca"/><text x="525" y="92" text-anchor="middle">DOWN/ADC</text>
+</g>
+<g stroke="#5a6b6a" stroke-width="1.4" fill="none" marker-end="url(#a)">
+  <line x1="112" y1="88" x2="126" y2="88"/><line x1="238" y1="88" x2="252" y2="88"/>
+  <line x1="324" y1="88" x2="338" y2="88"/><line x1="410" y1="88" x2="590" y2="88"/>
+  <line x1="452" y1="92" x2="452" y2="150"/><line x1="452" y1="150" x2="490" y2="150"/>
+  <line x1="486" y1="108" x2="486" y2="150"/>
+</g>
+<text x="600" y="92" font-size="10" fill="#586867">RF出力</text>
+
+<!-- PL ブロック -->
+<rect x="20" y="170" width="330" height="150" rx="10" fill="#f5f7f7" stroke="#0e7c86" stroke-width="1.6"/>
+<text x="35" y="192" font-size="12.5" font-weight="700" fill="#0b5b63">PL（FPGA）</text>
+<g font-size="10.5" fill="#15201f" text-anchor="middle">
+  <rect x="35"  y="204" width="140" height="30" rx="6" fill="#ffffff" stroke="#c2cbca"/><text x="105" y="223">歪評価・イベント検出</text>
+  <rect x="190" y="204" width="145" height="30" rx="6" fill="#ffffff" stroke="#c2cbca"/><text x="262" y="223">CAPTURE（観測確定・品質）</text>
+  <rect x="35"  y="244" width="140" height="30" rx="6" fill="#ffffff" stroke="#c2cbca"/><text x="105" y="263">二重バンク・境界同期切替</text>
+  <rect x="190" y="244" width="145" height="30" rx="6" fill="#ffffff" stroke="#c2cbca"/><text x="262" y="263">VERIFY / ROLLBACK</text>
+  <rect x="35"  y="284" width="300" height="26" rx="6" fill="#eef2f2" stroke="#c2cbca"/><text x="185" y="301">制御FSM（更新制御部）</text>
+</g>
+
+<!-- PS ブロック -->
+<rect x="410" y="170" width="330" height="150" rx="10" fill="#f5f7f7" stroke="#0e7c86" stroke-width="1.6"/>
+<text x="425" y="192" font-size="12.5" font-weight="700" fill="#0b5b63">PS（演算処理部：ARM / Raspberry Pi 等）</text>
+<g font-size="10.5" fill="#15201f" text-anchor="middle">
+  <rect x="425" y="204" width="300" height="30" rx="6" fill="#ffffff" stroke="#c2cbca"/><text x="575" y="223">係数推定  θ = Φ \ y（MP/ILA, 言語非依存）</text>
+  <rect x="425" y="244" width="300" height="30" rx="6" fill="#0e7c8618" stroke="#0e7c86"/><text x="575" y="263" fill="#0b5b63">採否制御：採用／保留／破棄／再計算</text>
+  <rect x="425" y="284" width="300" height="26" rx="6" fill="#eef2f2" stroke="#c2cbca"/><text x="575" y="301">識別情報（obs_id / req_id / coef_id）管理</text>
+</g>
+
+<!-- PL <-> PS リンク -->
+<g stroke="#0e7c86" stroke-width="1.6" fill="none" marker-end="url(#ac)">
+  <line x1="350" y1="225" x2="408" y2="225"/>
+  <line x1="408" y1="265" x2="352" y2="265"/>
+</g>
+<text x="379" y="216" text-anchor="middle" font-size="9.5" fill="#0b5b63">観測I/Q</text>
+<text x="379" y="285" text-anchor="middle" font-size="9.5" fill="#0b5b63">係数+タグ</text>
+<text x="379" y="345" text-anchor="middle" font-size="10" fill="#586867">授受：DDR共有(DMA/CMA)＋AXI、または Ethernet/TCP</text>
+
+<text x="20" y="398" font-size="9.5" fill="#8a9998">注：線は制御情報・係数の流れを簡略化した概念図。実際のIQ配線・RF経路・バス接続を全ては示さない。</text>
+</svg>
