@@ -18,9 +18,11 @@
   decision 1=ADOPT 2=HOLD 3=DROP 4=RECALC
 演算遅延/競合は injector が CAPTURE と RESULT_READY を分けて送ることで再現。
 """
-import socket, struct, sys
+import socket, struct, sys, time
 HDR = struct.Struct("<BIIfBBI")   # 19 bytes
 TOL = 0.02
+CALC_TIMEOUT = 0.30   # 演算タイムアウト[s] (実機はtick/ms. REG: 無応答で現係数維持)
+HOLD_DEADLINE = 0.30  # HOLD期限[s]     (実機はtick/ms. 超過で安全側=再計算)
 CAPTURE,PEND,CONF,RDY,DEC = 1,2,3,4,10
 ADOPT,HOLD,DROP,RECALC = 1,2,3,4
 NAME={ADOPT:"ADOPT",HOLD:"HOLD",DROP:"DROP",RECALC:"RECALC",0:"-"}
@@ -63,19 +65,39 @@ def estimate(iqbytes):
     return np.linalg.solve(A,P.conj().T@x)
 
 # ======================= PS側 デーモン(方式C) =======================
-def daemon_handle(conn, log=None):
+def daemon_handle(conn, log=None, calc_to=CALC_TIMEOUT, hold_to=HOLD_DEADLINE):
     coef_id=0; inflight={}; hold=None; pend={}
+    t_cap={}; t_hold=[None]                      # 演算開始/HOLD開始の時刻
     def unconfirmed(): return any(not v["confirmed"] for v in pend.values())
     def latest_conf_pa():
         cs=[v["pa"] for v in pend.values() if v["confirmed"]]
         return cs[-1] if cs else None
+    def check_timers():
+        nonlocal hold, pend
+        now=time.monotonic()
+        # 演算タイムアウト: 無応答の計算は破棄し現係数維持(安全側)
+        for obs in list(inflight):
+            if now - t_cap.get(obs,now) > calc_to:
+                inflight.pop(obs); t_cap.pop(obs,None)
+                send(conn,DEC,obs=obs,coef=coef_id,dec=DROP)
+                if log:log(f"TIMEOUT obs={obs}→DROP(現係数維持) coef={coef_id}")
+        # HOLD期限切れ: 後続観測が確定しないまま期限超過→再計算(現係数維持)
+        if hold is not None and t_hold[0] is not None and now - t_hold[0] > hold_to:
+            send(conn,DEC,obs=0,coef=coef_id,dec=RECALC)
+            if log:log(f"HOLD_DEADLINE→RECALC(現係数維持) coef={coef_id}")
+            hold=None; pend={}; t_hold[0]=None
+    conn.settimeout(0.05)
     while True:
-        m=recv_msg(conn)
+        try:
+            m=recv_msg(conn)
+        except socket.timeout:
+            check_timers(); continue
         if m is None: break
         t=m["t"]
         if t==CAPTURE:
             w=estimate(m["iq"]) if m["q"]!=0 else None
             inflight[m["obs"]]=dict(base=m["coef"],pa=m["pa"],q=m["q"],w=w)
+            t_cap[m["obs"]]=time.monotonic()
         elif t==PEND:
             pend[m["obs"]]=dict(confirmed=False,pa=m["pa"])
         elif t==CONF:
@@ -86,18 +108,18 @@ def daemon_handle(conn, log=None):
                     coef_id+=1; d=ADOPT
                 else:
                     d=RECALC
-                send(conn,DEC,obs=0,coef=coef_id,dec=d); hold=None; pend={}
+                send(conn,DEC,obs=0,coef=coef_id,dec=d); hold=None; pend={}; t_hold[0]=None
                 if log:log(f"CONF→{NAME[d]} coef={coef_id}")
         elif t==RDY:
-            r=inflight.pop(m["obs"],None); gnow=m["pa"]
+            r=inflight.pop(m["obs"],None); t_cap.pop(m["obs"],None); gnow=m["pa"]
             if r is None: d=DROP
             elif r["q"]==0: d=DROP                         # 無効観測でfit→破棄
             elif r["base"]!=coef_id: d=DROP                # 基準係数ID不一致
             elif unconfirmed():                            # 後続観測未確定→保留
-                hold=dict(base=r["base"],pa=r["pa"],w=r["w"]); d=HOLD
+                hold=dict(base=r["base"],pa=r["pa"],w=r["w"]); d=HOLD; t_hold[0]=time.monotonic()
             elif abs(r["pa"]-gnow)<=TOL: coef_id+=1; d=ADOPT   # 採用
             else: d=RECALC                                 # 条件不一致→再計算
-            if d!=HOLD: pend={}                            # 終端判定でpendクリア(本ハーネス簡略)
+            if d!=HOLD: pend={}; t_hold[0]=None            # 終端判定でpendクリア(本ハーネス簡略)
             send(conn,DEC,obs=m["obs"],coef=coef_id,dec=d)
             if log:log(f"RDY obs={m['obs']}→{NAME[d]} coef={coef_id}")
 
@@ -145,14 +167,23 @@ def run_tests(sock):
     send(sock,CAPTURE,obs=10,coef=cur[0],pa=0.37,q=1,payload=IQ)
     send(sock,PEND,obs=11,pa=0.37); send(sock,CONF,obs=11,pa=0.37)   # 先に確定
     send(sock,RDY,obs=10,pa=0.37); chk("T07 順序競合→採用1回",dec(),ADOPT)
+    # T09a 演算タイムアウト(RDYを送らない)→期限後に破棄・現係数維持
+    send(sock,CAPTURE,obs=13,coef=cur[0],pa=0.37,q=1,payload=IQ)
+    time.sleep(CALC_TIMEOUT+0.15); chk("T09a 演算タイムアウト→破棄",dec(),DROP)
+    # T09b HOLD期限切れ(CONFを送らない)→期限後に再計算・現係数維持
+    send(sock,CAPTURE,obs=14,coef=cur[0],pa=0.37,q=1,payload=IQ)
+    send(sock,PEND,obs=15,pa=0.37)
+    send(sock,RDY,obs=14,pa=0.37); chk("T09b-保留",dec(),HOLD)
+    time.sleep(HOLD_DEADLINE+0.15); chk("T09b HOLD期限→再計算",dec(),RECALC)
     # T12 重複(古いbase)→二重適用なし
-    send(sock,CAPTURE,obs=12,coef=0,pa=0.37,q=1,payload=IQ)
-    send(sock,RDY,obs=12,pa=0.37); chk("T12 二重適用なし",dec(),DROP)
+    send(sock,CAPTURE,obs=12,coef=cur[0],pa=0.37,q=1,payload=IQ); send(sock,RDY,obs=12,pa=0.37)
+    chk("T12a 採用",dec(),ADOPT)
+    send(sock,CAPTURE,obs=16,coef=0,pa=0.37,q=1,payload=IQ); send(sock,RDY,obs=16,pa=0.37)
+    chk("T12b 二重適用なし",dec(),DROP)
     return results
 
-SKIPS=[("T09 HOLD期限/演算タイムアウト","PL/タイマ依存(本ハーネス対象外)"),
-       ("T10 係数転送中イベント","PL転送・境界同期依存"),
-       ("T11 切替後の悪化→ROLLBACK","PL VERIFY/バンク切替依存")]
+SKIPS=[("T10 係数転送中イベント","PL転送・境界同期依存=未実装"),
+       ("T11 切替後の悪化→ROLLBACK","PL VERIFY/バンク切替依存=未実装")]
 
 def print_results(res, title):
     print(title); print("-"*60); ok=0
