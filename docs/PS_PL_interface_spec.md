@@ -87,8 +87,57 @@ PL: VERIFY窓で更新前後の歪比較 → 悪化なら ROLLBACK(旧バンク�
 
 ---
 
+## 5.1 計算中イベント・切替の詳細FSM（T10／T11 対応, 設計案）
+
+phase1_harness.py で SKIP とした **T10（係数転送中にイベント）／T11（切替後の悪化→ROLLBACK）** は、PL側の転送・境界同期・VERIFY に依存する。以下にその制御詳細を定める（RTL未実装・数値未確定）。
+
+### 5.1.1 STAGE（待機バンク転送）中にイベントが発生＝T10
+転送は原子的でない期間を含むため、**転送中の係数は決して有効化しない**。
+
+| 現状態 | 入力（優先順） | 次状態／動作 |
+|---|---|---|
+| STAGE | `distortion_event`（転送中に新イベント） | STAGE 継続（転送は中断しない）。`stage_event=1` を記録 |
+| STAGE | `bank_write_done` ＆ `integrity_ok` ＆ `stage_event==0` | VERIFY：`swap_boundary` で原子的に切替 |
+| STAGE | `bank_write_done` ＆ `integrity_ok` ＆ `stage_event==1` | **RECONCILE へ戻す**：切替境界の直前に `condition_ok` を再評価。OKなら VERIFY、NGなら DROP（現係数維持）＋必要なら RECALC |
+| STAGE | `integrity_fail` / `crc_fail` / 転送タイムアウト | DROP：待機バンクを無効化、現係数維持、FAULT記録 |
+
+規則：
+- **切替は必ず frame 境界で原子的**（半完成バンクを使わない）。`bank_write_done & integrity_ok(CRC/範囲/量子化) & swap_boundary` が全て立つまで切替禁止。
+- 転送中イベントがあった場合、**切替の直前に condition を再照合**（イベントで適用条件が無効化されていないか）。無効なら切替を取りやめ（＝T10 の要件「中途半端な係数を使わない」）。
+
+### 5.1.2 切替後の VERIFY と ROLLBACK＝T11
+切替後、更新前後の歪指標を**同一条件**で比較し、悪化時は旧係数へ戻す。
+
+| 現状態 | 条件 | 次状態／動作 |
+|---|---|---|
+| VERIFY | 同条件の比較窓が成立（`cond_stable`）＆ 歪指標が許容内／改善 | COMMIT：新係数を継続、`t_hold`/旧バンク保持を解除 |
+| VERIFY | 同条件比較で **有意に悪化**（`D_after − D_before > ΔD_fail`） | ROLLBACK：旧バンク再有効化、FAULT記録、原因（係数ID等）保持 |
+| VERIFY | 比較窓の途中で**新イベント**（条件が動いた） | 比較窓を**破棄して再取得**（過渡と通常を混ぜない）。期限 `VERIFY_DEADLINE` 超過は安全側で ROLLBACK |
+| VERIFY | 評価不能のまま `VERIFY_DEADLINE` 超過 | ROLLBACK（安全側）、FAULT記録 |
+
+規則：
+- **同条件ゲート**：切替直後の過渡を除外し、送信条件・PA_STATE が切替前後で `|ΔPA_STATE| ≤ TOL_STATE` の窓のみ比較に用いる。
+- **旧係数は VERIFY 完了まで保持**（ROLLBACK 可能）。COMMIT 後に解放。
+- ROLLBACK は**原子的**（frame 境界）で、COMMIT と同じ切替機構を逆向きに使う。
+
+### 5.1.3 追加レジスタ（本節で参照）
+| 名称 | 幅 | 用途 |
+|---|---|---|
+| STAGE_EVENT | 1 | 転送中にイベント発生（T10 の再照合トリガ） |
+| VERIFY_DEADLINE | 32 | VERIFY の期限（tick/ms）。超過で安全側 ROLLBACK |
+| DELTA_D_FAIL | 32 | 悪化判定しきい値 ΔD_fail（歪指標差） |
+| COND_STABLE | 1 | 同条件比較窓が成立（PLが判定） |
+
+### 5.1.4 検証（実装後に実行）
+- **T10**：STAGE 中に `distortion_event` を注入 → 中途半端な係数が適用されないこと、切替直前の再照合で採用/取りやめが分岐すること。
+- **T11**：切替後に歪を悪化させる係数を与え → 同条件比較で ROLLBACK、評価不能では期限後に安全側遷移すること。
+
+> 本節は設計案（FSM・レジスタ・しきい値は未確定）。RTL は別途実装し、テストベンチで T10／T11 を再現する。既存RTL正本は変更しない。
+
+---
+
 ## 6. 実機で確定する数値（未定）
-評価窓長 / QUALITY・PA_STATE の量子化幅 / TOL_STATE（状態一致許容）/ HOLD_DEADLINE / RETRY_MAX / pend深さ / 係数の固定小数点語長・CRC方式 / frame境界の定義 / 観測帯域とADC。
+評価窓長 / QUALITY・PA_STATE の量子化幅 / TOL_STATE（状態一致許容）/ HOLD_DEADLINE / RETRY_MAX / pend深さ / 係数の固定小数点語長・CRC方式 / frame境界の定義 / 観測帯域とADC / **VERIFY_DEADLINE** / **ΔD_fail（悪化判定しきい値）** / 同条件判定（COND_STABLE）の条件。
 
 ---
 
